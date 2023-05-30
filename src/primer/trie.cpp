@@ -6,7 +6,19 @@ namespace bustub {
 
 template <class T>
 auto Trie::Get(std::string_view key) const -> const T * {
-  throw NotImplementedException("Trie::Get is not implemented.");
+  int index = 0, len = key.size();
+  std::shared_ptr<const TrieNode> ptr = root_;
+  if(nullptr == ptr) return nullptr;
+
+  while(ptr && index < len) {
+    if(!(ptr->children_.count(key[index]))) return nullptr
+    ptr = ptr->children_[key[index]];
+    ++index;
+  }
+
+  return ptr->is_value_node_ ? dynamic_cast<TrieNodeWithValue *>(ptr)->value_.get() : nullptr;
+
+  // throw NotImplementedException("Trie::Get is not implemented.");
 
   // You should walk through the trie to find the node corresponding to the key. If the node doesn't exist, return
   // nullptr. After you find the node, you should use `dynamic_cast` to cast it to `const TrieNodeWithValue<T> *`. If
@@ -16,11 +28,14 @@ auto Trie::Get(std::string_view key) const -> const T * {
 
 template <class T>
 auto Trie::Put(std::string_view key, T value) const -> Trie {
+  
+  return nullptr;
   // Note that `T` might be a non-copyable type. Always use `std::move` when creating `shared_ptr` on that value.
-  throw NotImplementedException("Trie::Put is not implemented.");
+  // throw NotImplementedException("Trie::Put is not implemented.");
 
   // You should walk through the trie and create new nodes if necessary. If the node corresponding to the key already
   // exists, you should create a new `TrieNodeWithValue`.
+
 }
 
 auto Trie::Remove(std::string_view key) const -> Trie {
