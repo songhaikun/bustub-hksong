@@ -1,17 +1,21 @@
 #include "primer/trie.h"
 #include <string_view>
 #include "common/exception.h"
-
+#include <stack>
 namespace bustub {
 
 template <class T>
 auto Trie::Get(std::string_view key) const -> const T * {
   int index = 0, len = key.size();
   std::shared_ptr<const TrieNode> ptr = root_;
-  if(nullptr == ptr) return nullptr;
 
-  while(ptr && index < len) {
-    if(!(ptr->children_.count(key[index]))) return nullptr
+  if(nullptr == ptr || 0 >= len) {
+    cout << "error assignment in Get!" << endl; 
+    return nullptr;
+  }
+
+  while(index < len) {
+    if(!(ptr->children_.count(key[index]))) return nullptr;
     ptr = ptr->children_[key[index]];
     ++index;
   }
@@ -28,8 +32,32 @@ auto Trie::Get(std::string_view key) const -> const T * {
 
 template <class T>
 auto Trie::Put(std::string_view key, T value) const -> Trie {
-  
-  return nullptr;
+  //插入
+  int index = 0, len = key.size();
+  std::shared_ptr<const TrieNode> c_ptr = std::move(root_->Clone());
+  std::shared_ptr<const TrieNode> root = c_ptr;
+  //插入非终端节点
+  while(index < len - 1) {
+    std::shared_ptr<const TrieNode> t_ptr;
+    if(c_ptr->children_.count(key[index])){ //有路径
+      t_ptr = std::move((c_ptr->children_[key[index]])->Clone());
+    } else { //没有路径
+      t_ptr = std::shared_ptr<const TrieNode>(new TrieNode());
+    }
+    c_ptr->children_[key[index]] = t_ptr;
+    c_ptr = t_ptr;
+  }
+  //插入终端节点
+  std::shared_ptr<const TrieNodeWithValue> tv_ptr;
+  // std::shared_ptr<T> val(std::move(value));
+  if(c_ptr->children_.count(key[index])) {
+    tv_ptr = std::shared_ptr<const TrieNodeWithValue>(new TrieNodeWithValue(c_ptr->children_, std::move(value)));
+  } else {
+    tv_ptr = std::shared_ptr<const TrieNodeWithValue>(new TrieNodeWithValue(std::move(value)));
+  }
+  c_ptr->children_[key[index]] = tv_ptr;
+  // root_ = root;
+  return root;
   // Note that `T` might be a non-copyable type. Always use `std::move` when creating `shared_ptr` on that value.
   // throw NotImplementedException("Trie::Put is not implemented.");
 
@@ -39,7 +67,35 @@ auto Trie::Put(std::string_view key, T value) const -> Trie {
 }
 
 auto Trie::Remove(std::string_view key) const -> Trie {
-  throw NotImplementedException("Trie::Remove is not implemented.");
+  //删除节点与路径
+  std::stack<std::shared_ptr<const TrieNode>> path;
+  int index = 0, len = key.size();
+  std::shared_ptr<const TrieNode> c_ptr = root_;
+  
+  while(index < len - 1) {
+    if(!(c_ptr->children_.count(key[index]))) return *this;
+    path.push(c_ptr);
+    c_ptr = c_ptr->children_[key[index]];
+    ++index;
+  }
+  if(!(c_ptr->children_.count(key[index]))) return *this;
+  std::shared_ptr<const TrieNode> t_ptr = c_ptr->children_[key[index]];
+  if(0 == t_ptr->children_.size()) {
+    (c_ptr->children_).erase(key[index]);
+  } else {
+    t_ptr = std::shared_ptr<const TrieNode>(new TrieNode(t_ptr->children_));
+    c_ptr->children_[key[index]] = t_ptr;
+    return *this;
+  }
+  while(!path.empty()) {
+    t_ptr = path.top();
+    path.pop();
+    if(1 != t_ptr->children_.size()) break;
+    t_ptr->children_.erase(t_ptr->children_.begin(), t_ptr->children_.end());
+  }
+  return *this;
+
+  // throw NotImplementedException("Trie::Remove is not implemented.");
 
   // You should walk through the trie and remove nodes if necessary. If the node doesn't contain a value any more,
   // you should convert it to `TrieNode`. If a node doesn't have children any more, you should remove it.
