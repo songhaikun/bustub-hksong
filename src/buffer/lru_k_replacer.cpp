@@ -55,16 +55,6 @@ auto LRUKNode::GetBackwardK(double& bk, size_t timeval) -> bool {
     return true;
 }
 
-//  std::list<LRUKNode> node_list_;
-//  std::unordered_map<frame_id_t, std::list<LRUKNode>::iterator> node_store_;
-//  std::list<LRUKNode>::iterator young_list_;
-//  size_t current_timestamp_{0};
-//  size_t curr_size_{0};
-//  size_t replacer_size_;
-//  size_t k_;
-//  std::mutex latch_;
-//  std::mutex young_latch_;
-
 auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool { 
     // init with big lock
     std::unique_lock<std::mutex> lock(latch_);
@@ -109,27 +99,26 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id, [[maybe_unused]] AccessType
     std::unique_lock<std::mutex> lock(latch_);
     auto it = node_store_.find(frame_id);
     // make and insert node
+    time_t t = ::time(nullptr);
+    tm *cur_time = localtime(&t);
+    current_timestamp_ = cur_time->tm_gmtoff;
     if(node_store_.end() == it) {
         //check if can add this entry
-        bool expr = curr_size_ < replacer_size_;
+        bool expr = (frame_id <= static_cast<int>(replacer_size_));
         BUSTUB_ASSERT(expr, "replacer if full");
-
         node_list_.emplace_back(k_, frame_id);
         auto iter = std::prev(node_list_.end());
         if(node_list_.end() == young_list_) {
             young_list_ = iter;
         }
+        iter->PushHistory(current_timestamp_);
         node_store_[frame_id] = iter;
-        curr_size_++;
         return;
     }
 
     // change node
     auto iter = it->second;
-    time_t t = ::time(nullptr);
-    tm *cur_time = localtime(&t);
-    size_t cur_time_sz = cur_time->tm_gmtoff;
-    iter->PushHistory(cur_time_sz);
+    iter->PushHistory(current_timestamp_);
 
     // change list in old list
     if(iter->GetHistorySize() == k_){
@@ -155,15 +144,51 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id, [[maybe_unused]] AccessType
 }
 
 void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
-
+    // init with a big lock    
+    std::unique_lock<std::mutex> lock(latch_);
+    // if frame_id is not valid, panic
+    auto it = node_store_.find(frame_id);
+    bool expr = (node_store_.end() != it);
+    BUSTUB_ASSERT(expr, "frame id doens't exist");
+    auto iter = it->second;
+    if(set_evictable) {
+        if(iter->GetIsEvictable()) {
+            return; // do nothing
+        }
+        iter->SetIsEvictable(true);
+        curr_size_++;
+    } else {
+        if(!iter->GetIsEvictable()) {
+            return;
+        }
+        iter->SetIsEvictable(false);
+        curr_size_--;
+    }
 }
 
 void LRUKReplacer::Remove(frame_id_t frame_id) {
+    // init with a big lock    
+    std::unique_lock<std::mutex> lock(latch_);
+    auto it = node_store_.find(frame_id);
+    if(node_store_.end() == it) {
+        return;
+    }
+    auto iter = it->second;
+    if(!iter->GetIsEvictable()) {
+        throw("error remove: remove the non-evictable frame");
+        return;
+    }
+    node_store_.erase(it);
 
+    if(young_list_ == iter) {
+        young_list_++;
+    }
+    node_list_.erase(iter);
+    curr_size_--;
 }
 
 auto LRUKReplacer::Size() -> size_t { 
-    return 0; 
+    return curr_size_; 
 }
 
 }  // namespace bustub

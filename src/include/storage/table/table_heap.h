@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <memory>
 #include <mutex>  // NOLINT
 #include <optional>
 #include <utility>
@@ -68,7 +69,7 @@ class TableHeap {
   auto GetTuple(RID rid) -> std::pair<TupleMeta, Tuple>;
 
   /**
-   * Read a tuple meta from the table. Note: if you want to get tuple and meta together, use `GetTuple` insead
+   * Read a tuple meta from the table. Note: if you want to get tuple and meta together, use `GetTuple` instead
    * to ensure atomicity.
    * @param rid rid of the tuple to read
    * @return the meta
@@ -92,7 +93,17 @@ class TableHeap {
    */
   void UpdateTupleInPlaceUnsafe(const TupleMeta &meta, const Tuple &tuple, RID rid);
 
+  /** For binder tests */
+  static auto CreateEmptyHeap(bool create_table_heap = false) -> std::unique_ptr<TableHeap> {
+    // The input parameter should be false in order to generate a empty heap
+    assert(!create_table_heap);
+    return std::unique_ptr<TableHeap>(new TableHeap(create_table_heap));
+  }
+
  private:
+  /** Used for binder tests */
+  explicit TableHeap(bool create_table_heap = false);
+
   BufferPoolManager *bpm_;
   page_id_t first_page_id_{INVALID_PAGE_ID};
 
