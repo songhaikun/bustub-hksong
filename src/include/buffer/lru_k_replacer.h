@@ -28,21 +28,17 @@ enum class AccessType { Unknown = 0, Lookup, Scan, Index };
 class LRUKNode {
  public:
   explicit LRUKNode(size_t k, frame_id_t fid);
-  void SetIsEvictable(bool is_evictable) {
-    is_evictable_ = is_evictable;
-  }
+  void SetIsEvictable(bool is_evictable) { is_evictable_ = is_evictable; }
 
-  auto GetIsEvictable() -> bool {
-    return is_evictable_;
-  }
+  auto GetIsEvictable() -> bool { return is_evictable_; }
 
-  auto GetFrameId() -> frame_id_t { return fid_;}
+  auto GetFrameId() -> frame_id_t { return fid_; }
 
-  auto GetHistorySize() -> size_t { return history_size_;}
+  auto GetHistorySize() -> size_t { return history_size_; }
 
   auto PushHistory(size_t time_val) -> bool;
 
-  auto GetBackwardK(double& bk,  size_t timeval) -> bool;
+  auto GetBackwardK(double &bk, size_t timeval) -> bool;
 
   ~LRUKNode() = default;
 

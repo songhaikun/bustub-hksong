@@ -29,20 +29,18 @@ DiskScheduler::~DiskScheduler() {
   }
 }
 
-void DiskScheduler::Schedule(DiskRequest r) {
-  request_queue_.Put(std::move(r));
-}
+void DiskScheduler::Schedule(DiskRequest r) { request_queue_.Put(std::move(r)); }
 
 void DiskScheduler::StartWorkerThread() {
-  while(true) {
+  while (true) {
     auto request = request_queue_.Get();
-    if(!request.has_value()) {
+    if (!request.has_value()) {
       break;
     }
     if (std::nullopt == request) {
       break;
     }
-    if(request->is_write_) {
+    if (request->is_write_) {
       disk_manager_->WritePage(request->page_id_, request->data_);
     } else {
       disk_manager_->ReadPage(request->page_id_, request->data_);

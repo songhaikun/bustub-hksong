@@ -40,32 +40,32 @@ auto Planner::GetFuncCallFromFactory(const std::string &func_name, std::vector<A
   // 2. verify the number of args (should be 1), refer to the test cases for when you should throw an `Exception`.
   // 3. return a `StringExpression` std::shared_ptr.
 
-  if(func_name != "lower" && func_name != "upper") {
+  if (func_name != "lower" && func_name != "upper") {
     throw Exception(fmt::format("func call {} not supported in planner yet", func_name));
   }
-  if(1 != args.size()) {
+  if (1 != args.size()) {
     throw Exception(fmt::format("func call {} requires 1 argument", func_name));
   }
   std::shared_ptr<StringExpression> ans;
-  if(func_name == "lower") {
-    for(const auto &arg : args) {
+  if (func_name == "lower") {
+    for (const auto &arg : args) {
       StringExpressionType expr_type = StringExpressionType::Lower;
-      try{
+      try {
         ans = std::make_shared<StringExpression>(arg, expr_type);
-      }catch(Exception){
+      } catch (Exception) {
         throw Exception("expect the first arg to be varchar");
       }
     }
-  } else if(func_name == "upper") {
-    for(const auto &arg : args) {
+  } else if (func_name == "upper") {
+    for (const auto &arg : args) {
       StringExpressionType expr_type = StringExpressionType::Upper;
-      try{
+      try {
         ans = std::make_shared<StringExpression>(arg, expr_type);
-      }catch(Exception) {
+      } catch (Exception) {
         throw Exception("expect the first arg to be varchar");
       }
     }
-  } 
+  }
   return ans;
 }
 
