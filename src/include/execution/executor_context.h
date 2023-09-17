@@ -30,7 +30,7 @@ class AbstractExecutor;
  * ExecutorContext stores all the context necessary to run an executor.
  */
 class ExecutorContext {
- public:
+public:
   /**
    * Creates an ExecutorContext for the transaction that is executing the query.
    * @param transaction The transaction executing the query
@@ -39,16 +39,14 @@ class ExecutorContext {
    * @param txn_mgr The transaction manager that the executor uses
    * @param lock_mgr The lock manager that the executor uses
    */
-  ExecutorContext(Transaction *transaction, Catalog *catalog, BufferPoolManager *bpm, TransactionManager *txn_mgr,
+  ExecutorContext(Transaction *transaction, Catalog *catalog,
+                  BufferPoolManager *bpm, TransactionManager *txn_mgr,
                   LockManager *lock_mgr, bool is_delete)
-      : transaction_(transaction),
-        catalog_{catalog},
-        bpm_{bpm},
-        txn_mgr_(txn_mgr),
-        lock_mgr_(lock_mgr),
-        is_delete_(is_delete) {
-    nlj_check_exec_set_ = std::deque<std::pair<AbstractExecutor *, AbstractExecutor *>>(
-        std::deque<std::pair<AbstractExecutor *, AbstractExecutor *>>{});
+      : transaction_(transaction), catalog_{catalog}, bpm_{bpm},
+        txn_mgr_(txn_mgr), lock_mgr_(lock_mgr), is_delete_(is_delete) {
+    nlj_check_exec_set_ =
+        std::deque<std::pair<AbstractExecutor *, AbstractExecutor *>>(
+            std::deque<std::pair<AbstractExecutor *, AbstractExecutor *>>{});
     check_options_ = std::make_shared<CheckOptions>();
   }
 
@@ -75,14 +73,18 @@ class ExecutorContext {
   auto GetTransactionManager() -> TransactionManager * { return txn_mgr_; }
 
   /** @return the set of nlj check executors */
-  auto GetNLJCheckExecutorSet() -> std::deque<std::pair<AbstractExecutor *, AbstractExecutor *>> & {
+  auto GetNLJCheckExecutorSet()
+      -> std::deque<std::pair<AbstractExecutor *, AbstractExecutor *>> & {
     return nlj_check_exec_set_;
   }
 
   /** @return the check options */
-  auto GetCheckOptions() -> std::shared_ptr<CheckOptions> { return check_options_; }
+  auto GetCheckOptions() -> std::shared_ptr<CheckOptions> {
+    return check_options_;
+  }
 
-  void AddCheckExecutor(AbstractExecutor *left_exec, AbstractExecutor *right_exec) {
+  void AddCheckExecutor(AbstractExecutor *left_exec,
+                        AbstractExecutor *right_exec) {
     nlj_check_exec_set_.emplace_back(left_exec, right_exec);
   }
 
@@ -93,7 +95,7 @@ class ExecutorContext {
 
   auto IsDelete() const -> bool { return is_delete_; }
 
- private:
+private:
   /** The transaction context associated with this executor context */
   Transaction *transaction_;
   /** The database catalog associated with this executor context */
@@ -105,10 +107,11 @@ class ExecutorContext {
   /** The lock manager associated with this executor context */
   LockManager *lock_mgr_;
   /** The set of NLJ check executors associated with this executor context */
-  std::deque<std::pair<AbstractExecutor *, AbstractExecutor *>> nlj_check_exec_set_;
+  std::deque<std::pair<AbstractExecutor *, AbstractExecutor *>>
+      nlj_check_exec_set_;
   /** The set of check options associated with this executor context */
   std::shared_ptr<CheckOptions> check_options_;
   bool is_delete_;
 };
 
-}  // namespace bustub
+} // namespace bustub

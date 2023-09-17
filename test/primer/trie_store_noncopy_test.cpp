@@ -4,12 +4,12 @@
 #include <numeric>
 #include <optional>
 #include <random>
-#include <thread>  // NOLINT
+#include <thread> // NOLINT
 
 #include "common/exception.h"
-#include "gtest/gtest.h"
 #include "primer/trie.h"
 #include "primer/trie_store.h"
+#include "gtest/gtest.h"
 
 namespace bustub {
 
@@ -40,7 +40,9 @@ TEST(TrieStoreTest, ReadWriteTest) {
 
   std::cerr << "[0] begin" << std::endl;
 
-  std::thread t([&store, &x] { store.Put<MoveBlocked>("d", MoveBlocked(x.get_future())); });
+  std::thread t([&store, &x] {
+    store.Put<MoveBlocked>("d", MoveBlocked(x.get_future()));
+  });
 
   std::cerr << "[1] thread spawn" << std::endl;
 
@@ -71,4 +73,4 @@ TEST(TrieStoreTest, ReadWriteTest) {
   ASSERT_NE(store.Get<MoveBlocked>("d"), std::nullopt);
 }
 
-}  // namespace bustub
+} // namespace bustub

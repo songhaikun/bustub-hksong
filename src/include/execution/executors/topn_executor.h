@@ -28,13 +28,14 @@ namespace bustub {
  * The TopNExecutor executor executes a topn.
  */
 class TopNExecutor : public AbstractExecutor {
- public:
+public:
   /**
    * Construct a new TopNExecutor instance.
    * @param exec_ctx The executor context
    * @param plan The topn plan to be executed
    */
-  TopNExecutor(ExecutorContext *exec_ctx, const TopNPlanNode *plan, std::unique_ptr<AbstractExecutor> &&child_executor);
+  TopNExecutor(ExecutorContext *exec_ctx, const TopNPlanNode *plan,
+               std::unique_ptr<AbstractExecutor> &&child_executor);
 
   /** Initialize the topn */
   void Init() override;
@@ -48,20 +49,23 @@ class TopNExecutor : public AbstractExecutor {
   auto Next(Tuple *tuple, RID *rid) -> bool override;
 
   /** @return The output schema for the topn */
-  auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); }
+  auto GetOutputSchema() const -> const Schema & override {
+    return plan_->OutputSchema();
+  }
 
   /** Sets new child executor (for testing only) */
   void SetChildExecutor(std::unique_ptr<AbstractExecutor> &&child_executor) {
     child_executor_ = std::move(child_executor);
   }
 
-  /** @return The size of top_entries_ container, which will be called on each child_executor->Next(). */
+  /** @return The size of top_entries_ container, which will be called on each
+   * child_executor->Next(). */
   auto GetNumInHeap() -> size_t;
 
- private:
+private:
   /** The topn plan node to be executed */
   const TopNPlanNode *plan_;
   /** The child executor from which tuples are obtained */
   std::unique_ptr<AbstractExecutor> child_executor_;
 };
-}  // namespace bustub
+} // namespace bustub

@@ -14,10 +14,10 @@
 #include <cstdio>
 
 #include "buffer/buffer_pool_manager.h"
-#include "gtest/gtest.h"
 #include "storage/disk/disk_manager_memory.h"
 #include "storage/index/b_plus_tree.h"
-#include "test_util.h"  // NOLINT
+#include "test_util.h" // NOLINT
+#include "gtest/gtest.h"
 
 namespace bustub {
 
@@ -34,7 +34,8 @@ TEST(BPlusTreeTests, DISABLED_DeleteTest1) {
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
   // create b+ tree
-  BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree("foo_pk", header_page->GetPageId(), bpm, comparator);
+  BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree(
+      "foo_pk", header_page->GetPageId(), bpm, comparator);
   GenericKey<8> index_key;
   RID rid;
   // create transaction
@@ -74,7 +75,8 @@ TEST(BPlusTreeTests, DISABLED_DeleteTest1) {
     is_present = tree.GetValue(index_key, &rids);
 
     if (!is_present) {
-      EXPECT_NE(std::find(remove_keys.begin(), remove_keys.end(), key), remove_keys.end());
+      EXPECT_NE(std::find(remove_keys.begin(), remove_keys.end(), key),
+                remove_keys.end());
     } else {
       EXPECT_EQ(rids.size(), 1);
       EXPECT_EQ(rids[0].GetPageId(), 0);
@@ -101,7 +103,8 @@ TEST(BPlusTreeTests, DISABLED_DeleteTest2) {
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
   // create b+ tree
-  BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree("foo_pk", header_page->GetPageId(), bpm, comparator);
+  BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree(
+      "foo_pk", header_page->GetPageId(), bpm, comparator);
   GenericKey<8> index_key;
   RID rid;
   // create transaction
@@ -141,7 +144,8 @@ TEST(BPlusTreeTests, DISABLED_DeleteTest2) {
     is_present = tree.GetValue(index_key, &rids);
 
     if (!is_present) {
-      EXPECT_NE(std::find(remove_keys.begin(), remove_keys.end(), key), remove_keys.end());
+      EXPECT_NE(std::find(remove_keys.begin(), remove_keys.end(), key),
+                remove_keys.end());
     } else {
       EXPECT_EQ(rids.size(), 1);
       EXPECT_EQ(rids[0].GetPageId(), 0);
@@ -156,4 +160,4 @@ TEST(BPlusTreeTests, DISABLED_DeleteTest2) {
   delete transaction;
   delete bpm;
 }
-}  // namespace bustub
+} // namespace bustub

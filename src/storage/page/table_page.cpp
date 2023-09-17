@@ -12,13 +12,13 @@
 
 #include "storage/page/table_page.h"
 
+#include "common/config.h"
+#include "common/exception.h"
+#include "storage/table/tuple.h"
 #include <cassert>
 #include <cstring>
 #include <optional>
 #include <tuple>
-#include "common/config.h"
-#include "common/exception.h"
-#include "storage/table/tuple.h"
 
 namespace bustub {
 
@@ -28,7 +28,9 @@ void TablePage::Init() {
   num_deleted_tuples_ = 0;
 }
 
-auto TablePage::GetNextTupleOffset(const TupleMeta &meta, const Tuple &tuple) const -> std::optional<uint16_t> {
+auto TablePage::GetNextTupleOffset(const TupleMeta &meta,
+                                   const Tuple &tuple) const
+    -> std::optional<uint16_t> {
   size_t slot_end_offset;
   if (num_tuples_ > 0) {
     auto &[offset, size, meta] = tuple_info_[num_tuples_ - 1];
@@ -37,20 +39,23 @@ auto TablePage::GetNextTupleOffset(const TupleMeta &meta, const Tuple &tuple) co
     slot_end_offset = BUSTUB_PAGE_SIZE;
   }
   auto tuple_offset = slot_end_offset - tuple.GetLength();
-  auto offset_size = TABLE_PAGE_HEADER_SIZE + TUPLE_INFO_SIZE * (num_tuples_ + 1);
+  auto offset_size =
+      TABLE_PAGE_HEADER_SIZE + TUPLE_INFO_SIZE * (num_tuples_ + 1);
   if (tuple_offset < offset_size) {
     return std::nullopt;
   }
   return tuple_offset;
 }
 
-auto TablePage::InsertTuple(const TupleMeta &meta, const Tuple &tuple) -> std::optional<uint16_t> {
+auto TablePage::InsertTuple(const TupleMeta &meta, const Tuple &tuple)
+    -> std::optional<uint16_t> {
   auto tuple_offset = GetNextTupleOffset(meta, tuple);
   if (tuple_offset == std::nullopt) {
     return std::nullopt;
   }
   auto tuple_id = num_tuples_;
-  tuple_info_[tuple_id] = std::make_tuple(*tuple_offset, tuple.GetLength(), meta);
+  tuple_info_[tuple_id] =
+      std::make_tuple(*tuple_offset, tuple.GetLength(), meta);
   num_tuples_++;
   memcpy(page_start_ + *tuple_offset, tuple.data_.data(), tuple.GetLength());
   return tuple_id;
@@ -90,7 +95,8 @@ auto TablePage::GetTupleMeta(const RID &rid) const -> TupleMeta {
   return meta;
 }
 
-void TablePage::UpdateTupleInPlaceUnsafe(const TupleMeta &meta, const Tuple &tuple, RID rid) {
+void TablePage::UpdateTupleInPlaceUnsafe(const TupleMeta &meta,
+                                         const Tuple &tuple, RID rid) {
   auto tuple_id = rid.GetSlotNum();
   if (tuple_id >= num_tuples_) {
     throw bustub::Exception("Tuple ID out of range");
@@ -106,4 +112,4 @@ void TablePage::UpdateTupleInPlaceUnsafe(const TupleMeta &meta, const Tuple &tup
   memcpy(page_start_ + offset, tuple.data_.data(), tuple.GetLength());
 }
 
-}  // namespace bustub
+} // namespace bustub

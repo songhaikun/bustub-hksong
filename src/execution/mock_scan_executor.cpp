@@ -22,72 +22,90 @@
 
 namespace bustub {
 
-static const char *ta_list_2022[] = {"amstqq",      "durovo",     "joyceliaoo", "karthik-ramanathan-3006",
-                                     "kush789",     "lmwnshn",    "mkpjnx",     "skyzh",
-                                     "thepinetree", "timlee0119", "yliang412"};
+static const char *ta_list_2022[] = {
+    "amstqq",      "durovo",     "joyceliaoo", "karthik-ramanathan-3006",
+    "kush789",     "lmwnshn",    "mkpjnx",     "skyzh",
+    "thepinetree", "timlee0119", "yliang412"};
 
-static const char *ta_list_2023[] = {"abigalekim",      "arvinwu168", "christopherlim98", "David-Lyons", "fanyuex2",
-                                     "Mayank-Baranwal", "skyzh",      "yarkhinephyo",     "yliang412"};
+static const char *ta_list_2023[] = {
+    "abigalekim",  "arvinwu168",   "christopherlim98",
+    "David-Lyons", "fanyuex2",     "Mayank-Baranwal",
+    "skyzh",       "yarkhinephyo", "yliang412"};
 
-static const char *ta_oh_2022[] = {"Tuesday",   "Wednesday", "Monday",  "Wednesday", "Thursday", "Friday",
-                                   "Wednesday", "Randomly",  "Tuesday", "Monday",    "Tuesday"};
+static const char *ta_oh_2022[] = {
+    "Tuesday",   "Wednesday", "Monday",  "Wednesday", "Thursday", "Friday",
+    "Wednesday", "Randomly",  "Tuesday", "Monday",    "Tuesday"};
 
-static const char *ta_oh_2023[] = {"Friday",  "Thursday", "Tuesday",   "Monday",  "Tuesday",
-                                   "Tuesday", "Randomly", "Wednesday", "Thursday"};
+static const char *ta_oh_2023[] = {"Friday",   "Thursday",  "Tuesday",
+                                   "Monday",   "Tuesday",   "Tuesday",
+                                   "Randomly", "Wednesday", "Thursday"};
 
-static const char *course_on_date[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+static const char *course_on_date[] = {"Monday",   "Tuesday", "Wednesday",
+                                       "Thursday", "Friday",  "Saturday",
+                                       "Sunday"};
 
-const char *mock_table_list[] = {"__mock_table_1", "__mock_table_2", "__mock_table_3", "__mock_table_tas_2022",
-                                 "__mock_table_tas_2023", "__mock_agg_input_small", "__mock_agg_input_big",
-                                 "__mock_table_schedule_2022", "__mock_table_schedule_2023", "__mock_table_123",
-                                 "__mock_graph",
-                                 // For leaderboard Q1
-                                 "__mock_t1",
-                                 // For leaderboard Q2
-                                 "__mock_t4_1m", "__mock_t5_1m", "__mock_t6_1m",
-                                 // For leaderboard Q3
-                                 "__mock_t7", "__mock_t8", nullptr};
+const char *mock_table_list[] = {
+    "__mock_table_1", "__mock_table_2", "__mock_table_3",
+    "__mock_table_tas_2022", "__mock_table_tas_2023", "__mock_agg_input_small",
+    "__mock_agg_input_big", "__mock_table_schedule_2022",
+    "__mock_table_schedule_2023", "__mock_table_123", "__mock_graph",
+    // For leaderboard Q1
+    "__mock_t1",
+    // For leaderboard Q2
+    "__mock_t4_1m", "__mock_t5_1m", "__mock_t6_1m",
+    // For leaderboard Q3
+    "__mock_t7", "__mock_t8", nullptr};
 
 static const int GRAPH_NODE_CNT = 10;
 
 auto GetMockTableSchemaOf(const std::string &table) -> Schema {
   if (table == "__mock_table_1") {
-    return Schema{std::vector{{Column{"colA", TypeId::INTEGER}, {Column{"colB", TypeId::INTEGER}}}}};
+    return Schema{std::vector{
+        {Column{"colA", TypeId::INTEGER}, {Column{"colB", TypeId::INTEGER}}}}};
   }
 
   if (table == "__mock_table_2") {
-    return Schema{std::vector{Column{"colC", TypeId::VARCHAR, 128}, {Column{"colD", TypeId::VARCHAR, 128}}}};
+    return Schema{std::vector{Column{"colC", TypeId::VARCHAR, 128},
+                              {Column{"colD", TypeId::VARCHAR, 128}}}};
   }
 
   if (table == "__mock_table_3") {
-    return Schema{std::vector{Column{"colE", TypeId::INTEGER}, {Column{"colF", TypeId::VARCHAR, 128}}}};
+    return Schema{std::vector{Column{"colE", TypeId::INTEGER},
+                              {Column{"colF", TypeId::VARCHAR, 128}}}};
   }
 
   if (table == "__mock_table_tas_2022") {
-    return Schema{std::vector{Column{"github_id", TypeId::VARCHAR, 128}, Column{"office_hour", TypeId::VARCHAR, 128}}};
+    return Schema{std::vector{Column{"github_id", TypeId::VARCHAR, 128},
+                              Column{"office_hour", TypeId::VARCHAR, 128}}};
   }
 
   if (table == "__mock_table_tas_2023") {
-    return Schema{std::vector{Column{"github_id", TypeId::VARCHAR, 128}, Column{"office_hour", TypeId::VARCHAR, 128}}};
+    return Schema{std::vector{Column{"github_id", TypeId::VARCHAR, 128},
+                              Column{"office_hour", TypeId::VARCHAR, 128}}};
   }
 
   if (table == "__mock_table_schedule_2022") {
-    return Schema{std::vector{Column{"day_of_week", TypeId::VARCHAR, 128}, Column{"has_lecture", TypeId::INTEGER}}};
+    return Schema{std::vector{Column{"day_of_week", TypeId::VARCHAR, 128},
+                              Column{"has_lecture", TypeId::INTEGER}}};
   }
 
   if (table == "__mock_table_schedule_2023") {
-    return Schema{std::vector{Column{"day_of_week", TypeId::VARCHAR, 128}, Column{"has_lecture", TypeId::INTEGER}}};
+    return Schema{std::vector{Column{"day_of_week", TypeId::VARCHAR, 128},
+                              Column{"has_lecture", TypeId::INTEGER}}};
   }
 
   if (table == "__mock_agg_input_small" || table == "__mock_agg_input_big") {
-    return Schema{std::vector{Column{"v1", TypeId::INTEGER}, Column{"v2", TypeId::INTEGER},
-                              Column{"v3", TypeId::INTEGER}, Column{"v4", TypeId::INTEGER},
-                              Column{"v5", TypeId::INTEGER}, Column{"v6", TypeId::VARCHAR, 128}}};
+    return Schema{std::vector{
+        Column{"v1", TypeId::INTEGER}, Column{"v2", TypeId::INTEGER},
+        Column{"v3", TypeId::INTEGER}, Column{"v4", TypeId::INTEGER},
+        Column{"v5", TypeId::INTEGER}, Column{"v6", TypeId::VARCHAR, 128}}};
   }
 
   if (table == "__mock_graph") {
-    return Schema{std::vector{Column{"src", TypeId::INTEGER}, Column{"dst", TypeId::INTEGER},
-                              Column{"src_label", TypeId::VARCHAR, 8}, Column{"dst_label", TypeId::VARCHAR, 8},
+    return Schema{std::vector{Column{"src", TypeId::INTEGER},
+                              Column{"dst", TypeId::INTEGER},
+                              Column{"src_label", TypeId::VARCHAR, 8},
+                              Column{"dst_label", TypeId::VARCHAR, 8},
                               Column{"distance", TypeId::INTEGER}}};
   }
 
@@ -95,18 +113,22 @@ auto GetMockTableSchemaOf(const std::string &table) -> Schema {
     return Schema{std::vector{Column{"number", TypeId::INTEGER}}};
   }
 
-  if (table == "__mock_t4_1m" || table == "__mock_t5_1m" || table == "__mock_t6_1m") {
-    return Schema{std::vector{Column{"x", TypeId::INTEGER}, Column{"y", TypeId::INTEGER}}};
+  if (table == "__mock_t4_1m" || table == "__mock_t5_1m" ||
+      table == "__mock_t6_1m") {
+    return Schema{std::vector{Column{"x", TypeId::INTEGER},
+                              Column{"y", TypeId::INTEGER}}};
   }
 
   if (table == "__mock_t1") {
-    return Schema{
-        std::vector{Column{"x", TypeId::INTEGER}, Column{"y", TypeId::INTEGER}, Column{"z", TypeId::INTEGER}}};
+    return Schema{std::vector{Column{"x", TypeId::INTEGER},
+                              Column{"y", TypeId::INTEGER},
+                              Column{"z", TypeId::INTEGER}}};
   }
 
   if (table == "__mock_t7") {
-    return Schema{
-        std::vector{Column{"v", TypeId::INTEGER}, Column{"v1", TypeId::INTEGER}, Column{"v2", TypeId::INTEGER}}};
+    return Schema{std::vector{Column{"v", TypeId::INTEGER},
+                              Column{"v1", TypeId::INTEGER},
+                              Column{"v2", TypeId::INTEGER}}};
   }
 
   if (table == "__mock_t8") {
@@ -167,7 +189,8 @@ auto GetSizeOf(const MockScanPlanNode *plan) -> size_t {
     return 1000000;
   }
 
-  if (table == "__mock_t4_1m" || table == "__mock_t5_1m" || table == "__mock_t6_1m") {
+  if (table == "__mock_t4_1m" || table == "__mock_t5_1m" ||
+      table == "__mock_t6_1m") {
     return 1000000;
   }
 
@@ -200,7 +223,8 @@ auto GetShuffled(const MockScanPlanNode *plan) -> bool {
   return false;
 }
 
-auto GetFunctionOf(const MockScanPlanNode *plan) -> std::function<Tuple(size_t)> {
+auto GetFunctionOf(const MockScanPlanNode *plan)
+    -> std::function<Tuple(size_t)> {
   const auto &table = plan->GetTable();
 
   if (table == "__mock_table_1") {
@@ -217,9 +241,10 @@ auto GetFunctionOf(const MockScanPlanNode *plan) -> std::function<Tuple(size_t)>
     return [plan](size_t cursor) {
       std::vector<Value> values{};
       values.reserve(2);
-      values.push_back(ValueFactory::GetVarcharValue(fmt::format("{}-\U0001F4A9", cursor)));  // the poop emoji
-      values.push_back(
-          ValueFactory::GetVarcharValue(StringUtil::Repeat("\U0001F607", cursor % 8)));  // the innocent emoji
+      values.push_back(ValueFactory::GetVarcharValue(
+          fmt::format("{}-\U0001F4A9", cursor))); // the poop emoji
+      values.push_back(ValueFactory::GetVarcharValue(
+          StringUtil::Repeat("\U0001F607", cursor % 8))); // the innocent emoji
       return Tuple{values, &plan->OutputSchema()};
     };
   }
@@ -233,7 +258,8 @@ auto GetFunctionOf(const MockScanPlanNode *plan) -> std::function<Tuple(size_t)>
       } else {
         values.push_back(ValueFactory::GetNullValueByType(TypeId::INTEGER));
       }
-      values.push_back(ValueFactory::GetVarcharValue(fmt::format("{}-\U0001F4A9", cursor)));  // the poop emoji
+      values.push_back(ValueFactory::GetVarcharValue(
+          fmt::format("{}-\U0001F4A9", cursor))); // the poop emoji
       return Tuple{values, &plan->OutputSchema()};
     };
   }
@@ -260,7 +286,8 @@ auto GetFunctionOf(const MockScanPlanNode *plan) -> std::function<Tuple(size_t)>
     return [plan](size_t cursor) {
       std::vector<Value> values{};
       values.push_back(ValueFactory::GetVarcharValue(course_on_date[cursor]));
-      values.push_back(ValueFactory::GetIntegerValue(cursor == 1 || cursor == 3 ? 1 : 0));
+      values.push_back(
+          ValueFactory::GetIntegerValue(cursor == 1 || cursor == 3 ? 1 : 0));
       return Tuple{values, &plan->OutputSchema()};
     };
   }
@@ -269,7 +296,8 @@ auto GetFunctionOf(const MockScanPlanNode *plan) -> std::function<Tuple(size_t)>
     return [plan](size_t cursor) {
       std::vector<Value> values{};
       values.push_back(ValueFactory::GetVarcharValue(course_on_date[cursor]));
-      values.push_back(ValueFactory::GetIntegerValue(cursor == 0 || cursor == 2 ? 1 : 0));
+      values.push_back(
+          ValueFactory::GetIntegerValue(cursor == 0 || cursor == 2 ? 1 : 0));
       return Tuple{values, &plan->OutputSchema()};
     };
   }
@@ -282,8 +310,8 @@ auto GetFunctionOf(const MockScanPlanNode *plan) -> std::function<Tuple(size_t)>
       values.push_back(ValueFactory::GetIntegerValue((cursor + 50) % 100));
       values.push_back(ValueFactory::GetIntegerValue(cursor / 100));
       values.push_back(ValueFactory::GetIntegerValue(233));
-      values.push_back(
-          ValueFactory::GetVarcharValue(StringUtil::Repeat("\U0001F4A9", (cursor % 8) + 1)));  // the poop emoji
+      values.push_back(ValueFactory::GetVarcharValue(StringUtil::Repeat(
+          "\U0001F4A9", (cursor % 8) + 1))); // the poop emoji
       return Tuple{values, &plan->OutputSchema()};
     };
   }
@@ -296,8 +324,8 @@ auto GetFunctionOf(const MockScanPlanNode *plan) -> std::function<Tuple(size_t)>
       values.push_back(ValueFactory::GetIntegerValue((cursor + 50) % 100));
       values.push_back(ValueFactory::GetIntegerValue(cursor / 1000));
       values.push_back(ValueFactory::GetIntegerValue(233));
-      values.push_back(
-          ValueFactory::GetVarcharValue(StringUtil::Repeat("\U0001F4A9", (cursor % 16) + 1)));  // the poop emoji
+      values.push_back(ValueFactory::GetVarcharValue(StringUtil::Repeat(
+          "\U0001F4A9", (cursor % 16) + 1))); // the poop emoji
       return Tuple{values, &plan->OutputSchema()};
     };
   }
@@ -317,8 +345,10 @@ auto GetFunctionOf(const MockScanPlanNode *plan) -> std::function<Tuple(size_t)>
       int dst = cursor / GRAPH_NODE_CNT;
       values.push_back(ValueFactory::GetIntegerValue(src));
       values.push_back(ValueFactory::GetIntegerValue(dst));
-      values.push_back(ValueFactory::GetVarcharValue(fmt::format("{:03}", src)));
-      values.push_back(ValueFactory::GetVarcharValue(fmt::format("{:03}", dst)));
+      values.push_back(
+          ValueFactory::GetVarcharValue(fmt::format("{:03}", src)));
+      values.push_back(
+          ValueFactory::GetVarcharValue(fmt::format("{:03}", dst)));
       if (src == dst) {
         values.push_back(ValueFactory::GetNullValueByType(TypeId::INTEGER));
       } else {
@@ -397,8 +427,10 @@ auto GetFunctionOf(const MockScanPlanNode *plan) -> std::function<Tuple(size_t)>
   };
 }
 
-MockScanExecutor::MockScanExecutor(ExecutorContext *exec_ctx, const MockScanPlanNode *plan)
-    : AbstractExecutor{exec_ctx}, plan_{plan}, func_(GetFunctionOf(plan)), size_(GetSizeOf(plan)) {
+MockScanExecutor::MockScanExecutor(ExecutorContext *exec_ctx,
+                                   const MockScanPlanNode *plan)
+    : AbstractExecutor{exec_ctx}, plan_{plan}, func_(GetFunctionOf(plan)),
+      size_(GetSizeOf(plan)) {
   if (GetShuffled(plan)) {
     for (size_t i = 0; i < size_; i++) {
       shuffled_idx_.push_back(i);
@@ -431,4 +463,4 @@ auto MockScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {
 
 auto MockScanExecutor::MakeDummyRID() -> RID { return RID{0}; }
 
-}  // namespace bustub
+} // namespace bustub

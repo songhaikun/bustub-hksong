@@ -12,13 +12,13 @@
 #include <array>
 #include <cstring>
 #include <fstream>
-#include <future>  // NOLINT
+#include <future> // NOLINT
 #include <memory>
-#include <mutex>  // NOLINT
+#include <mutex> // NOLINT
 #include <optional>
 #include <shared_mutex>
 #include <string>
-#include <thread>  // NOLINT
+#include <thread> // NOLINT
 #include <utility>
 #include <vector>
 
@@ -30,11 +30,11 @@
 namespace bustub {
 
 /**
- * DiskManagerMemory replicates the utility of DiskManager on memory. It is primarily used for
- * data structure performance testing.
+ * DiskManagerMemory replicates the utility of DiskManager on memory. It is
+ * primarily used for data structure performance testing.
  */
 class DiskManagerMemory : public DiskManager {
- public:
+public:
   explicit DiskManagerMemory(size_t pages);
 
   ~DiskManagerMemory() override { delete[] memory_; }
@@ -53,16 +53,16 @@ class DiskManagerMemory : public DiskManager {
    */
   void ReadPage(page_id_t page_id, char *page_data) override;
 
- private:
+private:
   char *memory_;
 };
 
 /**
- * DiskManagerMemory replicates the utility of DiskManager on memory. It is primarily used for
- * data structure performance testing.
+ * DiskManagerMemory replicates the utility of DiskManager on memory. It is
+ * primarily used for data structure performance testing.
  */
 class DiskManagerUnlimitedMemory : public DiskManager {
- public:
+public:
   DiskManagerUnlimitedMemory() = default;
 
   /**
@@ -117,7 +117,7 @@ class DiskManagerUnlimitedMemory : public DiskManager {
 
   void SetLatency(size_t latency_ms) { latency_ = latency_ms; }
 
- private:
+private:
   std::mutex mutex_;
   using Page = std::array<char, BUSTUB_PAGE_SIZE>;
   using ProtectedPage = std::pair<Page, std::shared_mutex>;
@@ -125,4 +125,4 @@ class DiskManagerUnlimitedMemory : public DiskManager {
   size_t latency_{0};
 };
 
-}  // namespace bustub
+} // namespace bustub

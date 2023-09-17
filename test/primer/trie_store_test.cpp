@@ -4,12 +4,12 @@
 #include <numeric>
 #include <optional>
 #include <random>
-#include <thread>  // NOLINT
+#include <thread> // NOLINT
 
 #include "common/exception.h"
-#include "gtest/gtest.h"
 #include "primer/trie.h"
 #include "primer/trie_store.h"
+#include "gtest/gtest.h"
 
 namespace bustub {
 
@@ -121,4 +121,4 @@ TEST(TrieStoreTest, MixedConcurrentTest) {
   }
 }
 
-}  // namespace bustub
+} // namespace bustub

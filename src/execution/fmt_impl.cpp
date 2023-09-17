@@ -1,7 +1,7 @@
-#include <type_traits>
 #include "execution/plans/update_plan.h"
 #include "fmt/format.h"
 #include "fmt/ranges.h"
+#include <type_traits>
 
 #include "common/util/string_util.h"
 #include "execution/expressions/abstract_expression.h"
@@ -15,7 +15,8 @@
 
 namespace bustub {
 
-auto AbstractPlanNode::ChildrenToString(int indent, bool with_schema) const -> std::string {
+auto AbstractPlanNode::ChildrenToString(int indent, bool with_schema) const
+    -> std::string {
   if (children_.empty()) {
     return "";
   }
@@ -33,12 +34,13 @@ auto AbstractPlanNode::ChildrenToString(int indent, bool with_schema) const -> s
 }
 
 auto AggregationPlanNode::PlanNodeToString() const -> std::string {
-  return fmt::format("Agg {{ types={}, aggregates={}, group_by={} }}", agg_types_, aggregates_, group_bys_);
+  return fmt::format("Agg {{ types={}, aggregates={}, group_by={} }}",
+                     agg_types_, aggregates_, group_bys_);
 }
 
 auto HashJoinPlanNode::PlanNodeToString() const -> std::string {
-  return fmt::format("HashJoin {{ type={}, left_key={}, right_key={} }}", join_type_, left_key_expressions_,
-                     right_key_expressions_);
+  return fmt::format("HashJoin {{ type={}, left_key={}, right_key={} }}",
+                     join_type_, left_key_expressions_, right_key_expressions_);
 }
 
 auto ProjectionPlanNode::PlanNodeToString() const -> std::string {
@@ -46,17 +48,20 @@ auto ProjectionPlanNode::PlanNodeToString() const -> std::string {
 }
 
 auto UpdatePlanNode::PlanNodeToString() const -> std::string {
-  return fmt::format("Update {{ table_oid={}, target_exprs={} }}", table_oid_, target_expressions_);
+  return fmt::format("Update {{ table_oid={}, target_exprs={} }}", table_oid_,
+                     target_expressions_);
 }
 
 auto SortPlanNode::PlanNodeToString() const -> std::string {
   return fmt::format("Sort {{ order_bys={} }}", order_bys_);
 }
 
-auto LimitPlanNode::PlanNodeToString() const -> std::string { return fmt::format("Limit {{ limit={} }}", limit_); }
+auto LimitPlanNode::PlanNodeToString() const -> std::string {
+  return fmt::format("Limit {{ limit={} }}", limit_);
+}
 
 auto TopNPlanNode::PlanNodeToString() const -> std::string {
   return fmt::format("TopN {{ n={}, order_bys={}}}", n_, order_bys_);
 }
 
-}  // namespace bustub
+} // namespace bustub

@@ -1,16 +1,16 @@
-#include <fmt/format.h>
 #include <bitset>
+#include <fmt/format.h>
 #include <functional>
 #include <numeric>
 #include <optional>
 #include <random>
-#include <thread>  // NOLINT
+#include <thread> // NOLINT
 
 #include "common/exception.h"
-#include "gtest/gtest.h"
 #include "primer/trie.h"
 #include "primer/trie_answer.h"
-#include "trie_debug_answer.h"  // NOLINT
+#include "trie_debug_answer.h" // NOLINT
+#include "gtest/gtest.h"
 
 namespace bustub {
 
@@ -46,4 +46,4 @@ TEST(TrieDebugger, TestCase) {
   }
 }
 
-}  // namespace bustub
+} // namespace bustub

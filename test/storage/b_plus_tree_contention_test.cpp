@@ -2,29 +2,30 @@
  * b_plus_tree_contention_test.cpp
  */
 
-#include <chrono>  // NOLINT
+#include <chrono> // NOLINT
 #include <cstdio>
 #include <functional>
-#include <future>  // NOLINT
+#include <future> // NOLINT
 #include <iostream>
-#include <thread>  // NOLINT
+#include <thread> // NOLINT
 
 #include "buffer/buffer_pool_manager.h"
-#include "gtest/gtest.h"
 #include "storage/disk/disk_manager_memory.h"
 #include "storage/index/b_plus_tree.h"
-#include "test_util.h"  // NOLINT
+#include "test_util.h" // NOLINT
+#include "gtest/gtest.h"
 
 namespace bustub {
 
-bool BPlusTreeLockBenchmarkCall(size_t num_threads, int leaf_node_size, bool with_global_mutex) {
+bool BPlusTreeLockBenchmarkCall(size_t num_threads, int leaf_node_size,
+                                bool with_global_mutex) {
   bool success = true;
   std::vector<int64_t> insert_keys;
 
   // create KeyComparator and index schema
   auto key_schema = ParseCreateStatement("a bigint");
   GenericComparator<8> comparator(key_schema.get());
-  auto *disk_manager = new DiskManagerMemory(256 << 10);  // 1GB
+  auto *disk_manager = new DiskManagerMemory(256 << 10); // 1GB
   auto *bpm = new BufferPoolManager(64, disk_manager);
 
   // create and fetch header_page
@@ -33,7 +34,8 @@ bool BPlusTreeLockBenchmarkCall(size_t num_threads, int leaf_node_size, bool wit
   (void)header_page;
 
   // create b+ tree
-  BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree("foo_pk", page_id, bpm, comparator, leaf_node_size, 10);
+  BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree(
+      "foo_pk", page_id, bpm, comparator, leaf_node_size, 10);
 
   std::vector<std::thread> threads;
 
@@ -76,9 +78,12 @@ bool BPlusTreeLockBenchmarkCall(size_t num_threads, int leaf_node_size, bool wit
   return success;
 }
 
-TEST(BPlusTreeContentionTest, BPlusTreeContentionBenchmark) {  // NOLINT
-  std::cout << "This test will see how your B+ tree performance differs with and without contention." << std::endl;
-  std::cout << "If your submission timeout, segfault, or didn't implement lock crabbing, we will manually deduct all "
+TEST(BPlusTreeContentionTest, BPlusTreeContentionBenchmark) { // NOLINT
+  std::cout << "This test will see how your B+ tree performance differs with "
+               "and without contention."
+            << std::endl;
+  std::cout << "If your submission timeout, segfault, or didn't implement lock "
+               "crabbing, we will manually deduct all "
                "concurrent test points (maximum 25)."
             << std::endl;
   std::cout << "left_node_size = 2" << std::endl;
@@ -90,7 +95,8 @@ TEST(BPlusTreeContentionTest, BPlusTreeContentionBenchmark) {  // NOLINT
     auto clock_start = std::chrono::system_clock::now();
     ASSERT_TRUE(BPlusTreeLockBenchmarkCall(32, 2, enable_mutex));
     auto clock_end = std::chrono::system_clock::now();
-    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(clock_end - clock_start);
+    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(
+        clock_end - clock_start);
     if (enable_mutex) {
       time_ms_with_mutex.push_back(dur.count());
     } else {
@@ -116,15 +122,20 @@ TEST(BPlusTreeContentionTest, BPlusTreeContentionBenchmark) {  // NOLINT
   std::cout << std::endl;
   std::cout << "Ratio: " << ratio_1 / ratio_2 << std::endl;
   std::cout << ">>> END" << std::endl;
-  std::cout << "If your above data is an outlier in all submissions (based on statistics and probably some "
-               "machine-learning), TAs will manually inspect your code to ensure you are implementing lock crabbing "
+  std::cout << "If your above data is an outlier in all submissions (based on "
+               "statistics and probably some "
+               "machine-learning), TAs will manually inspect your code to "
+               "ensure you are implementing lock crabbing "
                "correctly."
             << std::endl;
 }
 
-TEST(BPlusTreeContentionTest, BPlusTreeContentionBenchmark2) {  // NOLINT
-  std::cout << "This test will see how your B+ tree performance differs with and without contention." << std::endl;
-  std::cout << "If your submission timeout, segfault, or didn't implement lock crabbing, we will manually deduct all "
+TEST(BPlusTreeContentionTest, BPlusTreeContentionBenchmark2) { // NOLINT
+  std::cout << "This test will see how your B+ tree performance differs with "
+               "and without contention."
+            << std::endl;
+  std::cout << "If your submission timeout, segfault, or didn't implement lock "
+               "crabbing, we will manually deduct all "
                "concurrent test points (maximum 25)."
             << std::endl;
   std::cout << "left_node_size = 10" << std::endl;
@@ -136,7 +147,8 @@ TEST(BPlusTreeContentionTest, BPlusTreeContentionBenchmark2) {  // NOLINT
     auto clock_start = std::chrono::system_clock::now();
     ASSERT_TRUE(BPlusTreeLockBenchmarkCall(32, 10, enable_mutex));
     auto clock_end = std::chrono::system_clock::now();
-    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(clock_end - clock_start);
+    auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(
+        clock_end - clock_start);
     if (enable_mutex) {
       time_ms_with_mutex.push_back(dur.count());
     } else {
@@ -162,10 +174,12 @@ TEST(BPlusTreeContentionTest, BPlusTreeContentionBenchmark2) {  // NOLINT
   std::cout << std::endl;
   std::cout << "Ratio: " << ratio_1 / ratio_2 << std::endl;
   std::cout << ">>> END2" << std::endl;
-  std::cout << "If your above data is an outlier in all submissions (based on statistics and probably some "
-               "machine-learning), TAs will manually inspect your code to ensure you are implementing lock crabbing "
+  std::cout << "If your above data is an outlier in all submissions (based on "
+               "statistics and probably some "
+               "machine-learning), TAs will manually inspect your code to "
+               "ensure you are implementing lock crabbing "
                "correctly."
             << std::endl;
 }
 
-}  // namespace bustub
+} // namespace bustub

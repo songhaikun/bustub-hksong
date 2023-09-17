@@ -1,14 +1,14 @@
-#include <fmt/format.h>
 #include <bitset>
+#include <fmt/format.h>
 #include <functional>
 #include <numeric>
 #include <optional>
 #include <random>
-#include <thread>  // NOLINT
+#include <thread> // NOLINT
 
 #include "common/exception.h"
-#include "gtest/gtest.h"
 #include "primer/trie.h"
+#include "gtest/gtest.h"
 
 namespace bustub {
 
@@ -247,7 +247,8 @@ TEST(TrieTest, PointerStability) {
   trie = trie.Put<uint32_t>("tes", 233);
   trie = trie.Put<uint32_t>("te", 23);
   auto *ptr_after = trie.Get<std::string>("test");
-  ASSERT_EQ(reinterpret_cast<uint64_t>(ptr_before), reinterpret_cast<uint64_t>(ptr_after));
+  ASSERT_EQ(reinterpret_cast<uint64_t>(ptr_before),
+            reinterpret_cast<uint64_t>(ptr_after));
 }
 
-}  // namespace bustub
+} // namespace bustub

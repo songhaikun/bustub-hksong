@@ -17,16 +17,17 @@
 #include <vector>
 
 #include "buffer/buffer_pool_manager.h"
-#include "gtest/gtest.h"
 #include "logging/common.h"
 #include "storage/table/table_heap.h"
 #include "storage/table/tuple.h"
+#include "gtest/gtest.h"
 
 namespace bustub {
 // NOLINTNEXTLINE
 TEST(TupleTest, DISABLED_TableHeapTest) {
   // test1: parse create sql statement
-  std::string create_stmt = "a varchar(20), b smallint, c bigint, d bool, e varchar(16)";
+  std::string create_stmt =
+      "a varchar(20), b smallint, c bigint, d bool, e varchar(16)";
   Column col1{"a", TypeId::VARCHAR, 20};
   Column col2{"b", TypeId::SMALLINT};
   Column col3{"c", TypeId::BIGINT};
@@ -43,7 +44,8 @@ TEST(TupleTest, DISABLED_TableHeapTest) {
 
   std::vector<RID> rid_v;
   for (int i = 0; i < 5000; ++i) {
-    auto rid = table->InsertTuple(TupleMeta{INVALID_TXN_ID, INVALID_TXN_ID, false}, tuple);
+    auto rid = table->InsertTuple(
+        TupleMeta{INVALID_TXN_ID, INVALID_TXN_ID, false}, tuple);
     rid_v.push_back(*rid);
   }
 
@@ -54,11 +56,11 @@ TEST(TupleTest, DISABLED_TableHeapTest) {
   }
 
   disk_manager->ShutDown();
-  remove("test.db");  // remove db file
+  remove("test.db"); // remove db file
   remove("test.log");
   delete table;
   delete buffer_pool_manager;
   delete disk_manager;
 }
 
-}  // namespace bustub
+} // namespace bustub

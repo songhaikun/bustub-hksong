@@ -25,7 +25,7 @@ namespace bustub {
  * TopNCheckExecutor checks the number of items in topn executor container
  */
 class TopNCheckExecutor : public AbstractExecutor {
- public:
+public:
   /**
    * Construct a new TopNCheckExecutor instance.
    * @param exec_ctx The executor context
@@ -33,7 +33,8 @@ class TopNCheckExecutor : public AbstractExecutor {
    * @param child_executor The topn child executor
    */
   TopNCheckExecutor(ExecutorContext *exec_ctx, const TopNPlanNode *plan,
-                    std::unique_ptr<AbstractExecutor> &&child_executor, TopNExecutor *topn_executor);
+                    std::unique_ptr<AbstractExecutor> &&child_executor,
+                    TopNExecutor *topn_executor);
 
   /** Initialize the TopNCheck */
   void Init() override;
@@ -47,9 +48,11 @@ class TopNCheckExecutor : public AbstractExecutor {
   auto Next(Tuple *tuple, RID *rid) -> bool override;
 
   /** @return The output schema for the child executor */
-  auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); };
+  auto GetOutputSchema() const -> const Schema & override {
+    return plan_->OutputSchema();
+  };
 
- private:
+private:
   /** TopNCheckExecutor returns `false` when child executor is exhausted */
   constexpr static const bool EXECUTOR_EXHAUSTED{false};
 
@@ -64,4 +67,4 @@ class TopNCheckExecutor : public AbstractExecutor {
   TopNExecutor *topn_executor_;
 };
 
-}  // namespace bustub
+} // namespace bustub

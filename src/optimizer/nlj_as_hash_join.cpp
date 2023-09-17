@@ -1,5 +1,3 @@
-#include <algorithm>
-#include <memory>
 #include "catalog/column.h"
 #include "catalog/schema.h"
 #include "common/exception.h"
@@ -14,10 +12,13 @@
 #include "execution/plans/projection_plan.h"
 #include "optimizer/optimizer.h"
 #include "type/type_id.h"
+#include <algorithm>
+#include <memory>
 
 namespace bustub {
 
-auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef {
+auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan)
+    -> AbstractPlanNodeRef {
   // TODO(student): implement NestedLoopJoin -> HashJoin optimizer rule
   // Note for 2023 Spring: You should at least support join keys of the form:
   // 1. <column expr> = <column expr>
@@ -25,4 +26,4 @@ auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan) -> Abstra
   return plan;
 }
 
-}  // namespace bustub
+} // namespace bustub

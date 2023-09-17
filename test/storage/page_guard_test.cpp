@@ -29,7 +29,8 @@ TEST(PageGuardTest, DISABLED_SampleTest) {
   const size_t k = 2;
 
   auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
-  auto bpm = std::make_shared<BufferPoolManager>(buffer_pool_size, disk_manager.get(), k);
+  auto bpm = std::make_shared<BufferPoolManager>(buffer_pool_size,
+                                                 disk_manager.get(), k);
 
   page_id_t page_id_temp;
   auto *page0 = bpm->NewPage(&page_id_temp);
@@ -48,4 +49,4 @@ TEST(PageGuardTest, DISABLED_SampleTest) {
   disk_manager->ShutDown();
 }
 
-}  // namespace bustub
+} // namespace bustub

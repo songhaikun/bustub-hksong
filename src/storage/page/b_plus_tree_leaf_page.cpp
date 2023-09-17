@@ -23,7 +23,8 @@ namespace bustub {
 
 /**
  * Init method after creating a new leaf page
- * Including set page type, set current size to zero, set next page id and set max size
+ * Including set page type, set current size to zero, set next page id and set
+ * max size
  */
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(int max_size) {}
@@ -32,7 +33,9 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::Init(int max_size) {}
  * Helper methods to set/get next page id
  */
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_LEAF_PAGE_TYPE::GetNextPageId() const -> page_id_t { return INVALID_PAGE_ID; }
+auto B_PLUS_TREE_LEAF_PAGE_TYPE::GetNextPageId() const -> page_id_t {
+  return INVALID_PAGE_ID;
+}
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::SetNextPageId(page_id_t next_page_id) {}
@@ -53,4 +56,4 @@ template class BPlusTreeLeafPage<GenericKey<8>, RID, GenericComparator<8>>;
 template class BPlusTreeLeafPage<GenericKey<16>, RID, GenericComparator<16>>;
 template class BPlusTreeLeafPage<GenericKey<32>, RID, GenericComparator<32>>;
 template class BPlusTreeLeafPage<GenericKey<64>, RID, GenericComparator<64>>;
-}  // namespace bustub
+} // namespace bustub

@@ -1,5 +1,3 @@
-#include <memory>
-#include <tuple>
 #include "binder/bound_expression.h"
 #include "binder/bound_statement.h"
 #include "binder/expressions/bound_agg_call.h"
@@ -20,10 +18,13 @@
 #include "execution/plans/abstract_plan.h"
 #include "fmt/format.h"
 #include "planner/planner.h"
+#include <memory>
+#include <tuple>
 
 namespace bustub {
 
-auto Planner::PlanFuncCall(const BoundFuncCall &expr, const std::vector<AbstractPlanNodeRef> &children)
+auto Planner::PlanFuncCall(const BoundFuncCall &expr,
+                           const std::vector<AbstractPlanNodeRef> &children)
     -> AbstractExpressionRef {
   std::vector<AbstractExpressionRef> args;
   for (const auto &arg : expr.args_) {
@@ -34,12 +35,15 @@ auto Planner::PlanFuncCall(const BoundFuncCall &expr, const std::vector<Abstract
 }
 
 // NOLINTNEXTLINE
-auto Planner::GetFuncCallFromFactory(const std::string &func_name, std::vector<AbstractExpressionRef> args)
+auto Planner::GetFuncCallFromFactory(const std::string &func_name,
+                                     std::vector<AbstractExpressionRef> args)
     -> AbstractExpressionRef {
   // 1. check if the parsed function name is "lower" or "upper".
-  // 2. verify the number of args (should be 1), refer to the test cases for when you should throw an `Excepetion`.
+  // 2. verify the number of args (should be 1), refer to the test cases for
+  // when you should throw an `Excepetion`.
   // 3. return a `StringExpression` std::shared_ptr.
-  throw Exception(fmt::format("func call {} not supported in planner yet", func_name));
+  throw Exception(
+      fmt::format("func call {} not supported in planner yet", func_name));
 }
 
-}  // namespace bustub
+} // namespace bustub

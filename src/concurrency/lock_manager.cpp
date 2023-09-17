@@ -18,15 +18,23 @@
 
 namespace bustub {
 
-auto LockManager::LockTable(Transaction *txn, LockMode lock_mode, const table_oid_t &oid) -> bool { return true; }
-
-auto LockManager::UnlockTable(Transaction *txn, const table_oid_t &oid) -> bool { return true; }
-
-auto LockManager::LockRow(Transaction *txn, LockMode lock_mode, const table_oid_t &oid, const RID &rid) -> bool {
+auto LockManager::LockTable(Transaction *txn, LockMode lock_mode,
+                            const table_oid_t &oid) -> bool {
   return true;
 }
 
-auto LockManager::UnlockRow(Transaction *txn, const table_oid_t &oid, const RID &rid, bool force) -> bool {
+auto LockManager::UnlockTable(Transaction *txn, const table_oid_t &oid)
+    -> bool {
+  return true;
+}
+
+auto LockManager::LockRow(Transaction *txn, LockMode lock_mode,
+                          const table_oid_t &oid, const RID &rid) -> bool {
+  return true;
+}
+
+auto LockManager::UnlockRow(Transaction *txn, const table_oid_t &oid,
+                            const RID &rid, bool force) -> bool {
   return true;
 }
 
@@ -48,9 +56,9 @@ auto LockManager::GetEdgeList() -> std::vector<std::pair<txn_id_t, txn_id_t>> {
 void LockManager::RunCycleDetection() {
   while (enable_cycle_detection_) {
     std::this_thread::sleep_for(cycle_detection_interval);
-    {  // TODO(students): detect deadlock
+    { // TODO(students): detect deadlock
     }
   }
 }
 
-}  // namespace bustub
+} // namespace bustub

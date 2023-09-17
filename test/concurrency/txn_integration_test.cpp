@@ -1,20 +1,20 @@
+#include <algorithm>
+#include <atomic>
+#include <chrono> // NOLINT
+#include <cstdio>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <gtest/gtest.h>
-#include <algorithm>
-#include <atomic>
-#include <chrono>  // NOLINT
-#include <cstdio>
 #include <memory>
 #include <random>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <thread>  //NOLINT
+#include <thread> //NOLINT
 #include <utility>
 #include <vector>
 
-#include "common_checker.h"  // NOLINT
+#include "common_checker.h" // NOLINT
 
 namespace bustub {
 
@@ -51,8 +51,9 @@ TEST(VisibilityTest, DISABLED_TestA) {
 
 // NOLINTNEXTLINE
 TEST(IsolationLevelTest, DISABLED_InsertTestA) {
-  ExpectTwoTxn("InsertTestA.1", IsolationLevel::READ_UNCOMMITTED, IsolationLevel::READ_UNCOMMITTED, false, IS_INSERT,
+  ExpectTwoTxn("InsertTestA.1", IsolationLevel::READ_UNCOMMITTED,
+               IsolationLevel::READ_UNCOMMITTED, false, IS_INSERT,
                ExpectedOutcome::DirtyRead);
 }
 
-}  // namespace bustub
+} // namespace bustub

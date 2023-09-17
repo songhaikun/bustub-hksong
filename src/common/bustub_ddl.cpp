@@ -1,5 +1,5 @@
-// DDL (Data Definition Language) statement handling in BusTub, including create table, create index, and set/show
-// variable.
+// DDL (Data Definition Language) statement handling in BusTub, including create
+// table, create index, and set/show variable.
 
 #include <optional>
 #include <shared_mutex>
@@ -40,7 +40,9 @@
 
 namespace bustub {
 
-void BustubInstance::HandleCreateStatement(Transaction *txn, const CreateStatement &stmt, ResultWriter &writer) {
+void BustubInstance::HandleCreateStatement(Transaction *txn,
+                                           const CreateStatement &stmt,
+                                           ResultWriter &writer) {
   std::unique_lock<std::shared_mutex> l(catalog_lock_);
   auto info = catalog_->CreateTable(txn, stmt.table_, Schema(stmt.columns_));
   l.unlock();
@@ -51,39 +53,50 @@ void BustubInstance::HandleCreateStatement(Transaction *txn, const CreateStateme
   WriteOneCell(fmt::format("Table created with id = {}", info->oid_), writer);
 }
 
-void BustubInstance::HandleIndexStatement(Transaction *txn, const IndexStatement &stmt, ResultWriter &writer) {
+void BustubInstance::HandleIndexStatement(Transaction *txn,
+                                          const IndexStatement &stmt,
+                                          ResultWriter &writer) {
   std::vector<uint32_t> col_ids;
   for (const auto &col : stmt.cols_) {
     auto idx = stmt.table_->schema_.GetColIdx(col->col_name_.back());
     col_ids.push_back(idx);
     if (stmt.table_->schema_.GetColumn(idx).GetType() != TypeId::INTEGER) {
-      throw NotImplementedException("only support creating index on integer column");
+      throw NotImplementedException(
+          "only support creating index on integer column");
     }
   }
   auto key_schema = Schema::CopySchema(&stmt.table_->schema_, col_ids);
 
-  // TODO(spring2023): If you want to support composite index key for leaderboard optimization, remove this assertion
-  // and create index with different key type that can hold multiple keys based on number of index columns.
+  // TODO(spring2023): If you want to support composite index key for
+  // leaderboard optimization, remove this assertion and create index with
+  // different key type that can hold multiple keys based on number of index
+  // columns.
   //
-  // You can also create clustered index that directly stores value inside the index by modifying the value type.
+  // You can also create clustered index that directly stores value inside the
+  // index by modifying the value type.
 
   if (col_ids.empty() || col_ids.size() > 2) {
-    throw NotImplementedException("only support creating index with exactly one or two columns");
+    throw NotImplementedException(
+        "only support creating index with exactly one or two columns");
   }
 
   std::unique_lock<std::shared_mutex> l(catalog_lock_);
-  auto info = catalog_->CreateIndex<IntegerKeyType, IntegerValueType, IntegerComparatorType>(
-      txn, stmt.index_name_, stmt.table_->table_, stmt.table_->schema_, key_schema, col_ids, TWO_INTEGER_SIZE,
-      IntegerHashFunctionType{});
+  auto info = catalog_->CreateIndex<IntegerKeyType, IntegerValueType,
+                                    IntegerComparatorType>(
+      txn, stmt.index_name_, stmt.table_->table_, stmt.table_->schema_,
+      key_schema, col_ids, TWO_INTEGER_SIZE, IntegerHashFunctionType{});
   l.unlock();
 
   if (info == nullptr) {
     throw bustub::Exception("Failed to create index");
   }
-  WriteOneCell(fmt::format("Index created with id = {}", info->index_oid_), writer);
+  WriteOneCell(fmt::format("Index created with id = {}", info->index_oid_),
+               writer);
 }
 
-void BustubInstance::HandleExplainStatement(Transaction *txn, const ExplainStatement &stmt, ResultWriter &writer) {
+void BustubInstance::HandleExplainStatement(Transaction *txn,
+                                            const ExplainStatement &stmt,
+                                            ResultWriter &writer) {
   std::string output;
 
   // Print binder result.
@@ -125,15 +138,15 @@ void BustubInstance::HandleExplainStatement(Transaction *txn, const ExplainState
   WriteOneCell(output, writer);
 }
 
-void BustubInstance::HandleVariableShowStatement(Transaction *txn, const VariableShowStatement &stmt,
-                                                 ResultWriter &writer) {
+void BustubInstance::HandleVariableShowStatement(
+    Transaction *txn, const VariableShowStatement &stmt, ResultWriter &writer) {
   auto content = GetSessionVariable(stmt.variable_);
   WriteOneCell(fmt::format("{}={}", stmt.variable_, content), writer);
 }
 
-void BustubInstance::HandleVariableSetStatement(Transaction *txn, const VariableSetStatement &stmt,
-                                                ResultWriter &writer) {
+void BustubInstance::HandleVariableSetStatement(
+    Transaction *txn, const VariableSetStatement &stmt, ResultWriter &writer) {
   session_variables_[stmt.variable_] = stmt.value_;
 }
 
-}  // namespace bustub
+} // namespace bustub

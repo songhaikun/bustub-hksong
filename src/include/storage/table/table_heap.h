@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <mutex>  // NOLINT
+#include <mutex> // NOLINT
 #include <optional>
 #include <utility>
 
@@ -34,7 +34,7 @@ namespace bustub {
 class TableHeap {
   friend class TableIterator;
 
- public:
+public:
   ~TableHeap() = default;
 
   /**
@@ -45,16 +45,19 @@ class TableHeap {
   explicit TableHeap(BufferPoolManager *bpm);
 
   /**
-   * Insert a tuple into the table. If the tuple is too large (>= page_size), return std::nullopt.
+   * Insert a tuple into the table. If the tuple is too large (>= page_size),
+   * return std::nullopt.
    * @param meta tuple meta
    * @param tuple tuple to insert
    * @return rid of the inserted tuple
    */
-  auto InsertTuple(const TupleMeta &meta, const Tuple &tuple, LockManager *lock_mgr = nullptr,
-                   Transaction *txn = nullptr, table_oid_t oid = 0) -> std::optional<RID>;
+  auto InsertTuple(const TupleMeta &meta, const Tuple &tuple,
+                   LockManager *lock_mgr = nullptr, Transaction *txn = nullptr,
+                   table_oid_t oid = 0) -> std::optional<RID>;
 
   /**
-   * Insert a tuple into the table. If the tuple is too large (>= page_size), return false.
+   * Insert a tuple into the table. If the tuple is too large (>= page_size),
+   * return false.
    * @param meta new tuple meta
    * @param[out] rid the rid of the inserted tuple
    */
@@ -68,8 +71,8 @@ class TableHeap {
   auto GetTuple(RID rid) -> std::pair<TupleMeta, Tuple>;
 
   /**
-   * Read a tuple meta from the table. Note: if you want to get tuple and meta together, use `GetTuple` insead
-   * to ensure atomicity.
+   * Read a tuple meta from the table. Note: if you want to get tuple and meta
+   * together, use `GetTuple` insead to ensure atomicity.
    * @param rid rid of the tuple to read
    * @return the meta
    */
@@ -78,21 +81,24 @@ class TableHeap {
   /** @return the iterator of this table, use this for project 3 */
   auto MakeIterator() -> TableIterator;
 
-  /** @return the iterator of this table, use this for project 4 except updates */
+  /** @return the iterator of this table, use this for project 4 except updates
+   */
   auto MakeEagerIterator() -> TableIterator;
 
   /** @return the id of the first page of this table */
   inline auto GetFirstPageId() const -> page_id_t { return first_page_id_; }
 
   /**
-   * Update a tuple in place. SHOULD NOT BE USED UNLESS YOU WANT TO OPTIMIZE FOR PROJECT 4.
+   * Update a tuple in place. SHOULD NOT BE USED UNLESS YOU WANT TO OPTIMIZE FOR
+   * PROJECT 4.
    * @param meta new tuple meta
    * @param tuple  new tuple
    * @param[out] rid the rid of the tuple to be updated
    */
-  void UpdateTupleInPlaceUnsafe(const TupleMeta &meta, const Tuple &tuple, RID rid);
+  void UpdateTupleInPlaceUnsafe(const TupleMeta &meta, const Tuple &tuple,
+                                RID rid);
 
- private:
+private:
   BufferPoolManager *bpm_;
   page_id_t first_page_id_{INVALID_PAGE_ID};
 
@@ -100,4 +106,4 @@ class TableHeap {
   page_id_t last_page_id_{INVALID_PAGE_ID}; /* protected by latch_ */
 };
 
-}  // namespace bustub
+} // namespace bustub

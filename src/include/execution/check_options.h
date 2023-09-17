@@ -29,8 +29,8 @@ enum class CheckOption : uint8_t {
  * executor logic.
  */
 class CheckOptions {
- public:
+public:
   std::unordered_set<CheckOption> check_options_set_;
 };
 
-};  // namespace bustub
+}; // namespace bustub

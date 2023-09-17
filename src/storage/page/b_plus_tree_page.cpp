@@ -40,4 +40,4 @@ void BPlusTreePage::SetMaxSize(int size) {}
  */
 auto BPlusTreePage::GetMinSize() const -> int { return 0; }
 
-}  // namespace bustub
+} // namespace bustub

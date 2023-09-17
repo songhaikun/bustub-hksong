@@ -4,7 +4,7 @@
 
 #include <atomic>
 #include <random>
-#include <thread>  // NOLINT
+#include <thread> // NOLINT
 
 #include "common/config.h"
 #include "concurrency/lock_manager.h"
@@ -72,7 +72,8 @@ TEST(LockManagerDeadlockDetectionTest, DISABLED_BasicDeadlockDetectionTest) {
 
   std::thread t0([&] {
     // Lock and sleep
-    bool res = lock_mgr.LockTable(txn0, LockManager::LockMode::INTENTION_EXCLUSIVE, toid);
+    bool res = lock_mgr.LockTable(
+        txn0, LockManager::LockMode::INTENTION_EXCLUSIVE, toid);
     EXPECT_EQ(true, res);
     res = lock_mgr.LockRow(txn0, LockManager::LockMode::EXCLUSIVE, toid, rid0);
     EXPECT_EQ(true, res);
@@ -94,7 +95,8 @@ TEST(LockManagerDeadlockDetectionTest, DISABLED_BasicDeadlockDetectionTest) {
   std::thread t1([&] {
     // Sleep so T0 can take necessary locks
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    bool res = lock_mgr.LockTable(txn1, LockManager::LockMode::INTENTION_EXCLUSIVE, toid);
+    bool res = lock_mgr.LockTable(
+        txn1, LockManager::LockMode::INTENTION_EXCLUSIVE, toid);
     EXPECT_EQ(res, true);
 
     res = lock_mgr.LockRow(txn1, LockManager::LockMode::EXCLUSIVE, toid, rid1);
@@ -117,4 +119,4 @@ TEST(LockManagerDeadlockDetectionTest, DISABLED_BasicDeadlockDetectionTest) {
   delete txn0;
   delete txn1;
 }
-}  // namespace bustub
+} // namespace bustub

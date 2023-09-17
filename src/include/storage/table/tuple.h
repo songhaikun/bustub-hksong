@@ -25,13 +25,13 @@ static constexpr size_t TUPLE_META_SIZE = 12;
 
 struct TupleMeta {
   /**
-   * @brief txn id that inserts this tuple. INVALID_TXN if the insertion is completed.
-   * No need to use it in project 3 (as of Spring 2023).
+   * @brief txn id that inserts this tuple. INVALID_TXN if the insertion is
+   * completed. No need to use it in project 3 (as of Spring 2023).
    */
   txn_id_t insert_txn_id_;
   /**
-   * @brief txn id that deletes this tuple. INVALID_TXN if the deletion is completed.
-   * No need to use it in project 3 (as of Spring 2023).
+   * @brief txn id that deletes this tuple. INVALID_TXN if the deletion is
+   * completed. No need to use it in project 3 (as of Spring 2023).
    */
   txn_id_t delete_txn_id_;
   /**
@@ -53,7 +53,7 @@ class Tuple {
   friend class TableHeap;
   friend class TableIterator;
 
- public:
+public:
   // Default constructor (to create a dummy tuple)
   Tuple() = default;
 
@@ -94,7 +94,8 @@ class Tuple {
   auto GetValue(const Schema *schema, uint32_t column_idx) const -> Value;
 
   // Generates a key tuple given schemas and attributes
-  auto KeyFromTuple(const Schema &schema, const Schema &key_schema, const std::vector<uint32_t> &key_attrs) -> Tuple;
+  auto KeyFromTuple(const Schema &schema, const Schema &key_schema,
+                    const std::vector<uint32_t> &key_attrs) -> Tuple;
 
   // Is the column value null ?
   inline auto IsNull(const Schema *schema, uint32_t column_idx) const -> bool {
@@ -104,12 +105,13 @@ class Tuple {
 
   auto ToString(const Schema *schema) const -> std::string;
 
- private:
+private:
   // Get the starting storage address of specific column
-  auto GetDataPtr(const Schema *schema, uint32_t column_idx) const -> const char *;
+  auto GetDataPtr(const Schema *schema, uint32_t column_idx) const -> const
+      char *;
 
-  RID rid_{};  // if pointing to the table heap, the rid is valid
+  RID rid_{}; // if pointing to the table heap, the rid is valid
   std::vector<char> data_;
 };
 
-}  // namespace bustub
+} // namespace bustub

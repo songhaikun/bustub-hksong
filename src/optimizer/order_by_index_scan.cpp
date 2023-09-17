@@ -21,7 +21,8 @@
 
 namespace bustub {
 
-auto Optimizer::OptimizeOrderByAsIndexScan(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef {
+auto Optimizer::OptimizeOrderByAsIndexScan(const AbstractPlanNodeRef &plan)
+    -> AbstractPlanNodeRef {
   std::vector<AbstractPlanNodeRef> children;
   for (const auto &child : plan->GetChildren()) {
     children.emplace_back(OptimizeOrderByAsIndexScan(child));
@@ -35,12 +36,14 @@ auto Optimizer::OptimizeOrderByAsIndexScan(const AbstractPlanNodeRef &plan) -> A
     std::vector<uint32_t> order_by_column_ids;
     for (const auto &[order_type, expr] : order_bys) {
       // Order type is asc or default
-      if (!(order_type == OrderByType::ASC || order_type == OrderByType::DEFAULT)) {
+      if (!(order_type == OrderByType::ASC ||
+            order_type == OrderByType::DEFAULT)) {
         return optimized_plan;
       }
 
       // Order expression is a column value expression
-      const auto *column_value_expr = dynamic_cast<ColumnValueExpression *>(expr.get());
+      const auto *column_value_expr =
+          dynamic_cast<ColumnValueExpression *>(expr.get());
       if (column_value_expr == nullptr) {
         return optimized_plan;
       }
@@ -49,7 +52,8 @@ auto Optimizer::OptimizeOrderByAsIndexScan(const AbstractPlanNodeRef &plan) -> A
     }
 
     // Has exactly one child
-    BUSTUB_ENSURE(optimized_plan->children_.size() == 1, "Sort with multiple children?? Impossible!");
+    BUSTUB_ENSURE(optimized_plan->children_.size() == 1,
+                  "Sort with multiple children?? Impossible!");
     const auto &child_plan = optimized_plan->children_[0];
 
     if (child_plan->GetType() == PlanType::SeqScan) {
@@ -63,13 +67,16 @@ auto Optimizer::OptimizeOrderByAsIndexScan(const AbstractPlanNodeRef &plan) -> A
         bool valid = true;
         if (columns.size() == order_by_column_ids.size()) {
           for (size_t i = 0; i < columns.size(); i++) {
-            if (columns[i].GetName() != table_info->schema_.GetColumn(order_by_column_ids[i]).GetName()) {
+            if (columns[i].GetName() !=
+                table_info->schema_.GetColumn(order_by_column_ids[i])
+                    .GetName()) {
               valid = false;
               break;
             }
           }
           if (valid) {
-            return std::make_shared<IndexScanPlanNode>(optimized_plan->output_schema_, index->index_oid_);
+            return std::make_shared<IndexScanPlanNode>(
+                optimized_plan->output_schema_, index->index_oid_);
           }
         }
       }
@@ -79,4 +86,4 @@ auto Optimizer::OptimizeOrderByAsIndexScan(const AbstractPlanNodeRef &plan) -> A
   return optimized_plan;
 }
 
-}  // namespace bustub
+} // namespace bustub
