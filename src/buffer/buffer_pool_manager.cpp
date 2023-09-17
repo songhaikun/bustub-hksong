@@ -18,12 +18,16 @@
 
 namespace bustub {
 
-BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager *disk_manager, size_t replacer_k,
-                                     LogManager *log_manager)
-    : pool_size_(pool_size), disk_manager_(disk_manager), log_manager_(log_manager) {
-  // TODO(students): remove this line after you have implemented the buffer pool manager
+BufferPoolManager::BufferPoolManager(size_t pool_size,
+                                     DiskManager *disk_manager,
+                                     size_t replacer_k, LogManager *log_manager)
+    : pool_size_(pool_size), disk_manager_(disk_manager),
+      log_manager_(log_manager) {
+  // TODO(students): remove this line after you have implemented the buffer pool
+  // manager
   throw NotImplementedException(
-      "BufferPoolManager is not implemented yet. If you have finished implementing BPM, please remove the throw "
+      "BufferPoolManager is not implemented yet. If you have finished "
+      "implementing BPM, please remove the throw "
       "exception line in `buffer_pool_manager.cpp`.");
 
   // we allocate a consecutive memory space for the buffer pool
@@ -38,13 +42,19 @@ BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager *disk_manager
 
 BufferPoolManager::~BufferPoolManager() { delete[] pages_; }
 
-auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * { return nullptr; }
-
-auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType access_type) -> Page * {
+auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
   return nullptr;
 }
 
-auto BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty, [[maybe_unused]] AccessType access_type) -> bool {
+auto BufferPoolManager::FetchPage(page_id_t page_id,
+                                  [[maybe_unused]] AccessType access_type)
+    -> Page * {
+  return nullptr;
+}
+
+auto BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty,
+                                  [[maybe_unused]] AccessType access_type)
+    -> bool {
   return false;
 }
 
@@ -56,12 +66,20 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool { return false; }
 
 auto BufferPoolManager::AllocatePage() -> page_id_t { return next_page_id_++; }
 
-auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard { return {this, nullptr}; }
+auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard {
+  return {this, nullptr};
+}
 
-auto BufferPoolManager::FetchPageRead(page_id_t page_id) -> ReadPageGuard { return {this, nullptr}; }
+auto BufferPoolManager::FetchPageRead(page_id_t page_id) -> ReadPageGuard {
+  return {this, nullptr};
+}
 
-auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard { return {this, nullptr}; }
+auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard {
+  return {this, nullptr};
+}
 
-auto BufferPoolManager::NewPageGuarded(page_id_t *page_id) -> BasicPageGuard { return {this, nullptr}; }
+auto BufferPoolManager::NewPageGuarded(page_id_t *page_id) -> BasicPageGuard {
+  return {this, nullptr};
+}
 
 }  // namespace bustub
