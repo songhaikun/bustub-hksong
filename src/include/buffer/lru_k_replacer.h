@@ -25,15 +25,36 @@ namespace bustub {
 
 enum class AccessType { Unknown = 0, Get, Scan };
 
+enum class InWhichList {NDLIST = 0, CLIST = 1};
 class LRUKNode {
+ public:
+  explicit LRUKNode(size_t k, frame_id_t fid);
+
+  void SetIsEvictable(bool is_evictable) {
+    is_evictable_ = is_evictable;
+  }
+
+  auto GetIsEvictable() -> bool {
+    return is_evictable_;
+  }
+
+  auto GetFrameId() -> frame_id_t { return fid_;}
+
+  auto GetHistorySize() -> size_t { return history_size_;}
+
+  auto PushHistory(size_t time_val) -> bool;
+
+  auto GetBackwardK(double& bk,  size_t timeval) -> bool;
+
+  ~LRUKNode() = default;
  private:
   /** History of last seen K timestamps of this page. Least recent timestamp stored in front. */
   // Remove maybe_unused if you start using them. Feel free to change the member variables as you want.
-
-  [[maybe_unused]] std::list<size_t> history_;
-  [[maybe_unused]] size_t k_;
-  [[maybe_unused]] frame_id_t fid_;
-  [[maybe_unused]] bool is_evictable_{false};
+  std::list<size_t> history_;
+  size_t history_size_{0};
+  size_t k_;
+  frame_id_t fid_;
+  bool is_evictable_{false};
 };
 
 /**
@@ -150,12 +171,19 @@ class LRUKReplacer {
  private:
   // TODO(student): implement me! You can replace these member variables as you like.
   // Remove maybe_unused if you start using them.
-  [[maybe_unused]] std::unordered_map<frame_id_t, LRUKNode> node_store_;
-  [[maybe_unused]] size_t current_timestamp_{0};
-  [[maybe_unused]] size_t curr_size_{0};
-  [[maybe_unused]] size_t replacer_size_;
-  [[maybe_unused]] size_t k_;
-  [[maybe_unused]] std::mutex latch_;
+  std::list<LRUKNode> node_list_;
+  std::list<LRUKNode> cache_list_;
+  std::unordered_map<frame_id_t, std::pair<std::list<LRUKNode>::iterator, InWhichList>> node_store_;
+  std::list<LRUKNode>::iterator young_list_;
+  size_t current_timestamp_{0};
+  size_t curr_size_{0};
+  size_t replacer_size_;
+  size_t k_;
+  std::mutex latch_;
+  std::mutex node_latch_;
+  std::mutex cache_latch_;
+
+  auto EvictInList(std::list<LRUKNode>& list, frame_id_t *frame_id) -> bool;
 };
 
 }  // namespace bustub
