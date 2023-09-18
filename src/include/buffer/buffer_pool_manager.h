@@ -14,7 +14,7 @@
 
 #include <list>
 #include <memory>
-#include <mutex> // NOLINT
+#include <mutex>  // NOLINT
 #include <unordered_map>
 
 #include "buffer/lru_k_replacer.h"
@@ -30,7 +30,7 @@ namespace bustub {
  * BufferPoolManager reads disk pages to and from its internal buffer pool.
  */
 class BufferPoolManager {
-public:
+ public:
   /**
    * @brief Creates a new BufferPoolManager.
    * @param pool_size the size of the buffer pool
@@ -39,8 +39,7 @@ public:
    * @param log_manager the log manager (for testing only: nullptr = disable
    * logging). Please ignore this for P1.
    */
-  BufferPoolManager(size_t pool_size, DiskManager *disk_manager,
-                    size_t replacer_k = LRUK_REPLACER_K,
+  BufferPoolManager(size_t pool_size, DiskManager *disk_manager, size_t replacer_k = LRUK_REPLACER_K,
                     LogManager *log_manager = nullptr);
 
   /**
@@ -115,8 +114,7 @@ public:
    * @return nullptr if page_id cannot be fetched, otherwise pointer to the
    * requested page
    */
-  auto FetchPage(page_id_t page_id,
-                 AccessType access_type = AccessType::Unknown) -> Page *;
+  auto FetchPage(page_id_t page_id, AccessType access_type = AccessType::Unknown) -> Page *;
 
   /**
    * TODO(P1): Add implementation
@@ -152,8 +150,7 @@ public:
    * @return false if the page is not in the page table or its pin count is <= 0
    * before this call, true otherwise
    */
-  auto UnpinPage(page_id_t page_id, bool is_dirty,
-                 AccessType access_type = AccessType::Unknown) -> bool;
+  auto UnpinPage(page_id_t page_id, bool is_dirty, AccessType access_type = AccessType::Unknown) -> bool;
 
   /**
    * TODO(P1): Add implementation
@@ -234,7 +231,6 @@ public:
   }
 
   // TODO(student): You may add additional private members and helper functions
-  auto GetUsablePage(frame_id_t *frame_id, 
-                     std::unique_lock<std::mutex>& lock) -> bool;
+  auto GetUsablePage(frame_id_t *frame_id, std::unique_lock<std::mutex> &lock) -> bool;
 };
 }  // namespace bustub

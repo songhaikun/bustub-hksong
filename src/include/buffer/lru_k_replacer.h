@@ -14,7 +14,7 @@
 
 #include <limits>
 #include <list>
-#include <mutex> // NOLINT
+#include <mutex>  // NOLINT
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -124,8 +124,7 @@ class LRUKReplacer {
    * @param access_type type of access that was received. This parameter is only
    * needed for leaderboard tests.
    */
-  void RecordAccess(frame_id_t frame_id,
-                    AccessType access_type = AccessType::Unknown);
+  void RecordAccess(frame_id_t frame_id, AccessType access_type = AccessType::Unknown);
 
   /**
    * TODO(P1): Add implementation
@@ -182,9 +181,7 @@ class LRUKReplacer {
   // like. Remove maybe_unused if you start using them.
   std::list<LRUKNode> node_list_;
   std::list<LRUKNode> cache_list_;
-  std::unordered_map<frame_id_t,
-                     std::pair<std::list<LRUKNode>::iterator, InWhichList>>
-      node_store_;
+  std::unordered_map<frame_id_t, std::pair<std::list<LRUKNode>::iterator, InWhichList>> node_store_;
   std::list<LRUKNode>::iterator young_list_;
   size_t current_timestamp_{0};
   size_t curr_size_{0};
@@ -194,8 +191,7 @@ class LRUKReplacer {
   std::mutex node_latch_;
   std::mutex cache_latch_;
 
-  auto EvictInList(std::list<LRUKNode> &list, frame_id_t *frame_id,
-                   std::unique_lock<std::mutex> &lock) -> bool;
+  auto EvictInList(std::list<LRUKNode> &list, frame_id_t *frame_id, std::unique_lock<std::mutex> &lock) -> bool;
 };
 
 }  // namespace bustub

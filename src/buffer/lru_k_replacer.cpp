@@ -18,8 +18,7 @@ namespace bustub {
 LRUKNode::LRUKNode(size_t k, frame_id_t fid) : k_(k), fid_(fid) {}
 
 // insert history
-auto LRUKNode::PushHistory(size_t time_val,
-                           std::unique_lock<std::mutex> &lock) -> bool {
+auto LRUKNode::PushHistory(size_t time_val, std::unique_lock<std::mutex> &lock) -> bool {
   if (history_.empty()) {
     history_.push_back(time_val);
     history_size_++;
@@ -38,8 +37,7 @@ auto LRUKNode::PushHistory(size_t time_val,
   return true;
 }
 
-auto LRUKNode::GetBackwardK(double &bk, size_t timeval,
-                            std::unique_lock<std::mutex> &lock) -> bool {
+auto LRUKNode::GetBackwardK(double &bk, size_t timeval, std::unique_lock<std::mutex> &lock) -> bool {
   if (history_.empty() || history_.front() > timeval) {
     return false;
   }
@@ -47,12 +45,9 @@ auto LRUKNode::GetBackwardK(double &bk, size_t timeval,
   return true;
 }
 
-LRUKReplacer::LRUKReplacer(size_t num_frames, size_t k)
-    : replacer_size_(num_frames), k_(k) {
-}
+LRUKReplacer::LRUKReplacer(size_t num_frames, size_t k) : replacer_size_(num_frames), k_(k) {}
 
-auto LRUKReplacer::EvictInList(std::list<LRUKNode> &list, frame_id_t *frame_id,
-                               std::unique_lock<std::mutex> &lock)
+auto LRUKReplacer::EvictInList(std::list<LRUKNode> &list, frame_id_t *frame_id, std::unique_lock<std::mutex> &lock)
     -> bool {
   // std::unique_lock<std::mutex> lock(latch_);
   for (auto nodeidx = list.begin(); nodeidx != list.end(); ++nodeidx) {
@@ -80,13 +75,8 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
   return EvictInList(cache_list_, frame_id, lock);
 }
 
-void LRUKReplacer::RecordAccess(frame_id_t frame_id,
-                                [[maybe_unused]] AccessType access_type) {
+void LRUKReplacer::RecordAccess(frame_id_t frame_id, [[maybe_unused]] AccessType access_type) {
   std::unique_lock<std::mutex> lock(latch_);
-  // std::unique_lock<std::mutex> cache_lock(cache_latch_);
-  // std::unique_lock<std::mutex> lock(latch_);
-  // time_t t = ::time(nullptr);
-  // tm *cur_time = localtime(&t);
   bool expr = (frame_id <= static_cast<int>(replacer_size_));
   BUSTUB_ASSERT(expr, "replacer too big");
   auto it = node_store_.find(frame_id);
@@ -107,16 +97,13 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id,
   double bw_k = 0.0;
   double bw_k_t = 0.0;
 
-  // lock.unlock();
   // insert it
   std::list<LRUKNode> &list = (sz <= k_ - 1) ? node_list_ : cache_list_;
   std::list<LRUKNode> &list_insert = (sz < k_ - 1) ? node_list_ : cache_list_;
   BUSTUB_ASSERT(iter->GetBackwardK(bw_k, current_timestamp_, lock), "get bk error");
   auto it_insert = list_insert.begin();
-  for (auto it_ori_r = list_insert.rbegin(); it_ori_r != list_insert.rend();
-       it_ori_r++) {
-    BUSTUB_ASSERT(it_ori_r->GetBackwardK(bw_k_t, current_timestamp_, lock),
-                  "get bk error");
+  for (auto it_ori_r = list_insert.rbegin(); it_ori_r != list_insert.rend(); it_ori_r++) {
+    BUSTUB_ASSERT(it_ori_r->GetBackwardK(bw_k_t, current_timestamp_, lock), "get bk error");
     if (bw_k <= bw_k_t) {
       it_insert = it_ori_r.base();
       break;
@@ -159,8 +146,7 @@ void LRUKReplacer::Remove(frame_id_t frame_id) {
     throw("error remove: remove the non-evictable frame");
     return;
   }
-  std::list<LRUKNode> &list =
-      (it->second.second == InWhichList::NDLIST) ? cache_list_ : node_list_;
+  std::list<LRUKNode> &list = (it->second.second == InWhichList::NDLIST) ? cache_list_ : node_list_;
   list.erase(iter);
   node_store_.erase(it);
   curr_size_--;

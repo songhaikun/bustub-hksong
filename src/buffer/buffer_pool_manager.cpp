@@ -19,12 +19,9 @@
 
 namespace bustub {
 
-BufferPoolManager::BufferPoolManager(size_t pool_size,
-                                     DiskManager *disk_manager,
-                                     size_t replacer_k, LogManager *log_manager)
-    : pool_size_(pool_size), disk_manager_(disk_manager),
-      log_manager_(log_manager) {
-
+BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager *disk_manager, size_t replacer_k,
+                                     LogManager *log_manager)
+    : pool_size_(pool_size), disk_manager_(disk_manager), log_manager_(log_manager) {
   // we allocate a consecutive memory space for the buffer pool
   pages_ = new Page[pool_size_];
   replacer_ = std::make_unique<LRUKReplacer>(pool_size, replacer_k);
@@ -37,10 +34,8 @@ BufferPoolManager::BufferPoolManager(size_t pool_size,
 
 BufferPoolManager::~BufferPoolManager() { delete[] pages_; }
 
-auto BufferPoolManager::GetUsablePage(frame_id_t *frame_id,
-                                      std::unique_lock<std::mutex>& lock) -> bool {
-  if (replacer_ == nullptr || disk_manager_ == nullptr
-      || (free_list_.empty() && replacer_->Size() == 0)) {
+auto BufferPoolManager::GetUsablePage(frame_id_t *frame_id, std::unique_lock<std::mutex> &lock) -> bool {
+  if (replacer_ == nullptr || disk_manager_ == nullptr || (free_list_.empty() && replacer_->Size() == 0)) {
     return false;
   }
   // get pages from the free list
@@ -50,7 +45,7 @@ auto BufferPoolManager::GetUsablePage(frame_id_t *frame_id,
     *frame_id = free_list_.front();
     free_list_.pop_front();
     pg = GetPages() + *frame_id;
-  } else if(replacer_->Evict(frame_id)) {  // get pages by replacer
+  } else if (replacer_->Evict(frame_id)) {  // get pages by replacer
     pg = GetPages() + *frame_id;
     if (pg->IsDirty()) {
       disk_manager_->WritePage(pg->GetPageId(), pg->GetData());
@@ -61,7 +56,7 @@ auto BufferPoolManager::GetUsablePage(frame_id_t *frame_id,
   }
   // write back dirty page
 
-  pg->pin_count_ = 1; // TODO(hksong): may need change later
+  pg->pin_count_ = 1;  // TODO(hksong): may need change later
   pg->is_dirty_ = false;
   pg->ResetMemory();
   replacer_->RecordAccess(*frame_id);
@@ -81,18 +76,14 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
   // set page metadata record page
   *page_id = AllocatePage();
   pg->page_id_ = *page_id;
-  page_table_[*page_id] = frame_id; // record it
-  //return page address
-  BUSTUB_ASSERT(pg->pin_count_ == 1 && pg->is_dirty_ == false && 
-                pg->page_id_ != INVALID_PAGE_ID,
-                "newpage: error new page"
-  );
+  page_table_[*page_id] = frame_id;  // record it
+  // return page address
+  BUSTUB_ASSERT(pg->pin_count_ == 1 && pg->is_dirty_ == false && pg->page_id_ != INVALID_PAGE_ID,
+                "newpage: error new page");
   return pg;
 }
 
-auto BufferPoolManager::FetchPage(page_id_t page_id,
-                                  [[maybe_unused]] AccessType access_type)
-    -> Page * {
+auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType access_type) -> Page * {
   // init with big lock
   std::unique_lock<std::mutex> lock(latch_);
   auto iter = page_table_.find(page_id);
@@ -117,16 +108,12 @@ auto BufferPoolManager::FetchPage(page_id_t page_id,
   // read from disk
   disk_manager_->ReadPage(page_id, pg->GetData());
   page_table_[page_id] = frame_id;
-  BUSTUB_ASSERT(pg->pin_count_ == 1 && pg->is_dirty_ == false && 
-                pg->page_id_ != INVALID_PAGE_ID,
-                "fetchpage: error get page"
-  );
+  BUSTUB_ASSERT(pg->pin_count_ == 1 && pg->is_dirty_ == false && pg->page_id_ != INVALID_PAGE_ID,
+                "fetchpage: error get page");
   return pg;
 }
 
-auto BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty,
-                                  [[maybe_unused]] AccessType access_type)
-    -> bool {
+auto BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty, [[maybe_unused]] AccessType access_type) -> bool {
   // init with big lock
   std::unique_lock<std::mutex> lock(latch_);
   auto iter = page_table_.find(page_id);
@@ -139,7 +126,7 @@ auto BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty,
     return false;
   }
   pg->pin_count_--;
-  if(!pg->IsDirty()) {
+  if (!pg->IsDirty()) {
     pg->is_dirty_ = is_dirty;
   }
   if (0 == pg->GetPinCount()) {
@@ -184,7 +171,7 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
     return false;
   }
   // write back
-  if(pg->is_dirty_) {
+  if (pg->is_dirty_) {
     BUSTUB_ASSERT(page_id == pg->GetPageId(), "pageid is wrong");
     disk_manager_->WritePage(page_id, pg->GetData());
     pg->is_dirty_ = false;
@@ -192,8 +179,7 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
   replacer_->Remove(frame_id);
   pg->ResetMemory();
   pg->page_id_ = INVALID_PAGE_ID;
-  BUSTUB_ASSERT(pg->GetPageId() == INVALID_PAGE_ID &&
-                pg->GetPinCount() == 0 && pg->is_dirty_ == false, 
+  BUSTUB_ASSERT(pg->GetPageId() == INVALID_PAGE_ID && pg->GetPinCount() == 0 && pg->is_dirty_ == false,
                 "deletepage: delete wrong");
   page_table_.erase(page_id);
   free_list_.push_back(frame_id);
@@ -208,7 +194,7 @@ auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard {
   if (nullptr == (p = FetchPage(page_id))) {
     return {this, nullptr};
   }
-  return {this, p}; 
+  return {this, p};
 }
 
 auto BufferPoolManager::FetchPageRead(page_id_t page_id) -> ReadPageGuard {
@@ -217,7 +203,7 @@ auto BufferPoolManager::FetchPageRead(page_id_t page_id) -> ReadPageGuard {
     return {this, nullptr};
   }
   p->RLatch();
-  return {this, p}; 
+  return {this, p};
 }
 
 auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard {
@@ -226,13 +212,13 @@ auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard {
     return {this, nullptr};
   }
   p->WLatch();
-  return {this, p}; 
+  return {this, p};
 }
 
 auto BufferPoolManager::NewPageGuarded(page_id_t *page_id) -> BasicPageGuard {
   Page *p;
   if (nullptr == (p = NewPage(page_id))) {
-    return {this, nullptr}; 
+    return {this, nullptr};
   }
   return {this, p};
 }

@@ -63,7 +63,8 @@ class BasicPageGuard {
 
   auto GetData() -> const char * { return page_->GetData(); }
 
-  template <class T> auto As() -> const T * {
+  template <class T>
+  auto As() -> const T * {
     return reinterpret_cast<const T *>(GetData());
   }
 
@@ -72,7 +73,8 @@ class BasicPageGuard {
     return page_->GetData();
   }
 
-  template <class T> auto AsMut() -> T * {
+  template <class T>
+  auto AsMut() -> T * {
     return reinterpret_cast<T *>(GetDataMut());
   }
 
@@ -80,7 +82,7 @@ class BasicPageGuard {
   friend class ReadPageGuard;
   friend class WritePageGuard;
 
-  [[maybe_unused]] BufferPoolManager *bpm_{nullptr};
+  BufferPoolManager *bpm_{nullptr};
   Page *page_{nullptr};
   bool is_dirty_{false};
 };
@@ -135,7 +137,10 @@ class ReadPageGuard {
 
   auto GetData() -> const char * { return guard_.GetData(); }
 
-  template <class T> auto As() -> const T * { return guard_.As<T>(); }
+  template <class T>
+  auto As() -> const T * {
+    return guard_.As<T>();
+  }
 
  private:
   // You may choose to get rid of this and add your own private variables.
@@ -192,11 +197,17 @@ class WritePageGuard {
 
   auto GetData() -> const char * { return guard_.GetData(); }
 
-  template <class T> auto As() -> const T * { return guard_.As<T>(); }
+  template <class T>
+  auto As() -> const T * {
+    return guard_.As<T>();
+  }
 
   auto GetDataMut() -> char * { return guard_.GetDataMut(); }
 
-  template <class T> auto AsMut() -> T * { return guard_.AsMut<T>(); }
+  template <class T>
+  auto AsMut() -> T * {
+    return guard_.AsMut<T>();
+  }
 
  private:
   // You may choose to get rid of this and add your own private variables.

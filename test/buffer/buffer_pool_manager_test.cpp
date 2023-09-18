@@ -30,12 +30,14 @@ TEST(BufferPoolManagerTest, BinaryDataTest) {
   std::random_device r;
   std::default_random_engine rng(r());
 
-  constexpr int lower_bound = static_cast<int>(std::numeric_limits<char>::min());
-  constexpr int upper_bound = static_cast<int>(std::numeric_limits<char>::max());
-  // No matter if `char` is signed or unsigned by default, this constraint must be met
+  constexpr int lower_bound =
+      static_cast<int>(std::numeric_limits<char>::min());
+  constexpr int upper_bound =
+      static_cast<int>(std::numeric_limits<char>::max());
+  // No matter if `char` is signed or unsigned by default, this constraint must
+  // be met
   static_assert(upper_bound - lower_bound == 255);
   std::uniform_int_distribution<int> uniform_dist(lower_bound, upper_bound);
-
 
   auto *disk_manager = new DiskManager(db_name);
   auto *bpm = new BufferPoolManager(buffer_pool_size, disk_manager, k);
