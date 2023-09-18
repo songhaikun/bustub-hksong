@@ -31,17 +31,17 @@ class LRUKNode {
  public:
   explicit LRUKNode(size_t k, frame_id_t fid);
 
-  void SetIsEvictable(bool is_evictable) { is_evictable_ = is_evictable; }
+  void SetIsEvictable(bool is_evictable, std::unique_lock<std::mutex> &lock) { is_evictable_ = is_evictable; }
 
-  auto GetIsEvictable() -> bool { return is_evictable_; }
+  auto GetIsEvictable(std::unique_lock<std::mutex> &lock) -> bool { return is_evictable_; }
 
-  auto GetFrameId() -> frame_id_t { return fid_; }
+  auto GetFrameId(std::unique_lock<std::mutex> &lock) -> frame_id_t { return fid_; }
 
-  auto GetHistorySize() -> size_t { return history_size_; }
+  auto GetHistorySize(std::unique_lock<std::mutex> &lock) -> size_t { return history_size_; }
 
-  auto PushHistory(size_t time_val) -> bool;
+  auto PushHistory(size_t time_val, std::unique_lock<std::mutex> &lock) -> bool;
 
-  auto GetBackwardK(double &bk, size_t timeval) -> bool;
+  auto GetBackwardK(double &bk, size_t timeval, std::unique_lock<std::mutex> &lock) -> bool;
 
   ~LRUKNode() = default;
 
@@ -194,7 +194,8 @@ class LRUKReplacer {
   std::mutex node_latch_;
   std::mutex cache_latch_;
 
-  auto EvictInList(std::list<LRUKNode> &list, frame_id_t *frame_id) -> bool;
+  auto EvictInList(std::list<LRUKNode> &list, frame_id_t *frame_id,
+                   std::unique_lock<std::mutex> &lock) -> bool;
 };
 
 }  // namespace bustub
