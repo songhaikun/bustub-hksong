@@ -39,7 +39,7 @@ struct PrintableBPlusTree;
  * that you're modifying or accessing.
  */
 class Context {
-public:
+ public:
   // When you insert into / remove from the B+ tree, store the write guard of
   // header page here. Remember to drop the header page guard and set it to
   // nullopt when you want to unlock all.
@@ -48,7 +48,7 @@ public:
   // Save the root page id here so that it's easier to know if the current page
   // is the root page.
   page_id_t root_page_id_{INVALID_PAGE_ID};
-
+  page_id_t last_page_id_{INVALID_PAGE_ID};
   // Store the write guards of the pages that you're modifying here.
   std::deque<WritePageGuard> write_set_;
 
@@ -56,7 +56,21 @@ public:
   std::deque<ReadPageGuard> read_set_;
 
   auto IsRootPage(page_id_t page_id) -> bool {
-    return page_id == root_page_id_;
+    if (std::nullopt != header_page_) {
+      const BPlusTreeHeaderPage *root_page = header_page_->AsMut<BPlusTreeHeaderPage>();
+      root_page_id_ = root_page->root_page_id_;
+      return root_page_id_ == page_id;
+    }
+    return false;
+  }
+  auto UpdateRootPage(page_id_t page_id) -> bool {
+    if (std::nullopt != header_page_) {
+      auto *root_page = header_page_->AsMut<BPlusTreeHeaderPage>();
+      root_page->root_page_id_ = page_id;
+      header_page_ = std::nullopt;
+      return true;
+    }
+    return false;
   }
 };
 
@@ -68,26 +82,22 @@ class BPlusTree {
   using InternalPage = BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator>;
   using LeafPage = BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>;
 
-public:
-  explicit BPlusTree(std::string name, page_id_t header_page_id,
-                     BufferPoolManager *buffer_pool_manager,
-                     const KeyComparator &comparator,
-                     int leaf_max_size = LEAF_PAGE_SIZE,
+ public:
+  explicit BPlusTree(std::string name, page_id_t header_page_id, BufferPoolManager *buffer_pool_manager,
+                     const KeyComparator &comparator, int leaf_max_size = LEAF_PAGE_SIZE,
                      int internal_max_size = INTERNAL_PAGE_SIZE);
 
   // Returns true if this B+ tree has no keys and values.
   auto IsEmpty() const -> bool;
 
   // Insert a key-value pair into this B+ tree.
-  auto Insert(const KeyType &key, const ValueType &value,
-              Transaction *txn = nullptr) -> bool;
+  auto Insert(const KeyType &key, const ValueType &value, Transaction *txn = nullptr) -> bool;
 
   // Remove a key and its value from this B+ tree.
   void Remove(const KeyType &key, Transaction *txn);
 
   // Return the value associated with a given key
-  auto GetValue(const KeyType &key, std::vector<ValueType> *result,
-                Transaction *txn = nullptr) -> bool;
+  auto GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *txn = nullptr) -> bool;
 
   // Return the page id of the root node
   auto GetRootPageId() -> page_id_t;
@@ -124,10 +134,9 @@ public:
   // read data from file and remove one by one
   void RemoveFromFile(const std::string &file_name, Transaction *txn = nullptr);
 
-private:
+ private:
   /* Debug Routines for FREE!! */
-  void ToGraph(page_id_t page_id, const BPlusTreePage *page,
-               std::ofstream &out);
+  void ToGraph(page_id_t page_id, const BPlusTreePage *page, std::ofstream &out);
 
   void PrintTree(page_id_t page_id, const BPlusTreePage *page);
 
@@ -139,11 +148,15 @@ private:
    */
   auto ToPrintableBPlusTree(page_id_t root_id) -> PrintableBPlusTree;
 
+  auto InsertLeafPage(Context &ctx, MappingType &mapping, bool &need_split_root, Transaction *txn) -> bool;
+
+  auto InsertInternalPage(Context &ctx, KeyType &key, page_id_t value, bool &need_split_root, Transaction *txn) -> bool;
+
   // member variable
   std::string index_name_;
   BufferPoolManager *bpm_;
   KeyComparator comparator_;
-  std::vector<std::string> log; // NOLINT
+  std::vector<std::string> log;  // NOLINT
   int leaf_max_size_;
   int internal_max_size_;
   page_id_t header_page_id_;
@@ -185,4 +198,4 @@ struct PrintableBPlusTree {
   }
 };
 
-} // namespace bustub
+}  // namespace bustub
