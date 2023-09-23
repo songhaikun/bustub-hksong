@@ -23,7 +23,7 @@ namespace bustub {
 
 using bustub::DiskManagerUnlimitedMemory;
 
-TEST(BPlusTreeTests, DISABLED_DeleteTest1) {
+TEST(BPlusTreeTests, DeleteTest1) {
   // create KeyComparator and index schema
   auto key_schema = ParseCreateStatement("a bigint");
   GenericComparator<8> comparator(key_schema.get());
@@ -35,13 +35,13 @@ TEST(BPlusTreeTests, DISABLED_DeleteTest1) {
   auto header_page = bpm->NewPage(&page_id);
   // create b+ tree
   BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree(
-      "foo_pk", header_page->GetPageId(), bpm, comparator);
+      "foo_pk", header_page->GetPageId(), bpm, comparator, 4, 5);
   GenericKey<8> index_key;
   RID rid;
   // create transaction
   auto *transaction = new Transaction(0);
 
-  std::vector<int64_t> keys = {1, 2, 3, 4, 5};
+  std::vector<int64_t> keys = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
   for (auto key : keys) {
     int64_t value = key & 0xFFFFFFFF;
     rid.Set(static_cast<int32_t>(key >> 32), value);
@@ -59,12 +59,14 @@ TEST(BPlusTreeTests, DISABLED_DeleteTest1) {
     int64_t value = key & 0xFFFFFFFF;
     EXPECT_EQ(rids[0].GetSlotNum(), value);
   }
-
-  std::vector<int64_t> remove_keys = {1, 5};
+  tree.Print(bpm);
+  printf("\n\n");
+  std::vector<int64_t> remove_keys = {1, 5, 13, 2, 3, 4, 7, 15, 14, 16, 18, 19, 20, 6, 8};
   for (auto key : remove_keys) {
     index_key.SetFromInteger(key);
     tree.Remove(index_key, transaction);
   }
+  tree.Print(bpm);
 
   int64_t size = 0;
   bool is_present;
@@ -74,10 +76,10 @@ TEST(BPlusTreeTests, DISABLED_DeleteTest1) {
     index_key.SetFromInteger(key);
     is_present = tree.GetValue(index_key, &rids);
 
-    if (!is_present) {
+    if (!is_present) {  // can't find
       EXPECT_NE(std::find(remove_keys.begin(), remove_keys.end(), key),
                 remove_keys.end());
-    } else {
+    } else {  // can find
       EXPECT_EQ(rids.size(), 1);
       EXPECT_EQ(rids[0].GetPageId(), 0);
       EXPECT_EQ(rids[0].GetSlotNum(), key);
@@ -85,14 +87,14 @@ TEST(BPlusTreeTests, DISABLED_DeleteTest1) {
     }
   }
 
-  EXPECT_EQ(size, 3);
+  EXPECT_EQ(size, keys.size() - remove_keys.size());
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
   delete transaction;
   delete bpm;
 }
 
-TEST(BPlusTreeTests, DISABLED_DeleteTest2) {
+TEST(BPlusTreeTests, DeleteTest2) {
   // create KeyComparator and index schema
   auto key_schema = ParseCreateStatement("a bigint");
   GenericComparator<8> comparator(key_schema.get());

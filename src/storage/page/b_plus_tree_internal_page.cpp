@@ -56,6 +56,15 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertKeyAndValueAt(int index, const KeyTyp
   }
 }
 
+INDEX_TEMPLATE_ARGUMENTS
+void B_PLUS_TREE_INTERNAL_PAGE_TYPE::DeleteKeyAndValueAt(int index) {
+  if (index >= 0 && index < GetSize()) {
+    for (int i = index; i < GetSize(); ++i) {
+      array_[i] = array_[i + 1];
+    }
+    IncreaseSize(-1);
+  }
+}
 /*
  * Helper method to get the value associated with input "index"(a.k.a array
  * offset)

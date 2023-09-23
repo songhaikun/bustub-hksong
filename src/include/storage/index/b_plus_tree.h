@@ -49,6 +49,9 @@ class Context {
   // is the root page.
   page_id_t root_page_id_{INVALID_PAGE_ID};
   page_id_t last_page_id_{INVALID_PAGE_ID};
+  page_id_t merged_page_id_{INVALID_PAGE_ID};
+  int last_index_{-1};
+  bool can_directly_delete_{false};
   // Store the write guards of the pages that you're modifying here.
   std::deque<WritePageGuard> write_set_;
 
@@ -150,8 +153,11 @@ class BPlusTree {
 
   auto InsertLeafPage(Context &ctx, MappingType &mapping, bool &need_split_root, Transaction *txn) -> bool;
 
-  auto InsertInternalPage(Context &ctx, KeyType &key, page_id_t value, bool &need_split_root, Transaction *txn) -> bool;
+  auto InsertInternalPage(Context &ctx, const KeyType &key, page_id_t value, bool &need_split_root, Transaction *txn) -> bool;
 
+  void DeleteLeafPage(Context &ctx, const KeyType &key, Transaction *txn);
+
+  void DeleteInternalPage(Context &ctx, Transaction *txn);
   // member variable
   std::string index_name_;
   BufferPoolManager *bpm_;

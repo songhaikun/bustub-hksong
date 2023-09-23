@@ -89,8 +89,6 @@ TEST(BPlusTreeTests, InsertTest2) {
     rid.Set(static_cast<int32_t>(key >> 32), value);
     index_key.SetFromInteger(key);
     tree.Insert(index_key, rid, transaction);
-    tree.Print(bpm);
-    printf("\n\n");
   }
 
   std::vector<RID> rids;
