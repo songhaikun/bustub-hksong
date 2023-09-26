@@ -16,6 +16,7 @@
 #include <memory>
 #include <mutex>  // NOLINT
 #include <unordered_map>
+#include <deque>
 
 #include "buffer/lru_k_replacer.h"
 #include "common/config.h"
@@ -196,7 +197,7 @@ class BufferPoolManager {
   const size_t pool_size_;
   /** The next page id to be allocated  */
   std::atomic<page_id_t> next_page_id_ = 0;
-
+  std::deque<page_id_t> removed_pages_;
   /** Array of buffer pool pages. */
   Page *pages_;
   /** Pointer to the disk manager. */

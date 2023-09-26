@@ -182,12 +182,20 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
   BUSTUB_ASSERT(pg->GetPageId() == INVALID_PAGE_ID && pg->GetPinCount() == 0 && pg->is_dirty_ == false,
                 "deletepage: delete wrong");
   page_table_.erase(page_id);
+  removed_pages_.push_front(page_id);
   free_list_.push_back(frame_id);
   DeallocatePage(page_id);
   return true;
 }
 
-auto BufferPoolManager::AllocatePage() -> page_id_t { return next_page_id_++; }
+auto BufferPoolManager::AllocatePage() -> page_id_t {
+  if(!removed_pages_.empty()) {
+    page_id_t page_id = removed_pages_.back();
+    removed_pages_.pop_back();
+    return page_id;
+  }
+  return next_page_id_++;
+}
 
 auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard {
   Page *p;
