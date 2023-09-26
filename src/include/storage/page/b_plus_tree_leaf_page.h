@@ -88,6 +88,59 @@ class BPlusTreeLeafPage : public BPlusTreePage {
     return kstr;
   }
 
+  auto GetIndexLargerThanKey(int i, const KeyType key, KeyComparator comporator) const -> int {
+    int start = i, end = GetSize() - 1;
+    while (start <= end) {
+      int mid_idx = start + (end - start) / 2;
+      KeyType mid_key = array_[mid_idx].first;
+      int cmp = comporator(mid_key, key);
+      if (cmp < 0) {
+        start = mid_idx + 1;
+      } else if (cmp > 0) {
+        end = mid_idx - 1;
+      } else {
+        return mid_idx + 1;
+      }
+    }
+    return start;
+  }
+
+  auto GetIndexEqualToKey(int& i, const KeyType key, KeyComparator comporator) const -> bool {
+    int start = i, end = GetSize() - 1;
+    while (start <= end) {
+      int mid_idx = start + (end - start) / 2;
+      KeyType mid_key = array_[mid_idx].first;
+      int cmp = comporator(mid_key, key);
+      if (cmp < 0) {
+        start = mid_idx + 1;
+      } else if (cmp > 0) {
+        end = mid_idx - 1;
+      } else {
+        i = mid_idx;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // auto GetIndexEqualToValue(int& i, const ValueType value) const -> bool {
+  //   int start = i, end = GetSize() - 1;
+  //   while (start <= end) {
+  //     int mid_idx = start + (end - start) / 2;
+  //     ValueType mid_value = array_[mid_idx].second;
+  //     // int cmp = mid_key - value;
+  //     if (mid_value < value) {
+  //       start = mid_idx + 1;
+  //     } else if (mid_value > value) {
+  //       end = mid_idx - 1;
+  //     } else {
+  //       i = mid_idx;
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
+
  private:
   page_id_t next_page_id_;
   // Flexible array member for page data.

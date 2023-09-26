@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "buffer/buffer_pool_manager.h"
 #include "common/config.h"
 #include "common/macros.h"
 #include "concurrency/transaction.h"
@@ -44,16 +45,18 @@ class Context {
   // header page here. Remember to drop the header page guard and set it to
   // nullopt when you want to unlock all.
   std::optional<WritePageGuard> header_page_{std::nullopt};
-
+  std::optional<WritePageGuard> last_insert_page_{std::nullopt};
   // Save the root page id here so that it's easier to know if the current page
   // is the root page.
   page_id_t root_page_id_{INVALID_PAGE_ID};
   page_id_t last_page_id_{INVALID_PAGE_ID};
   page_id_t merged_page_id_{INVALID_PAGE_ID};
+  page_id_t deleted_page_id_{INVALID_PAGE_ID};
   int last_index_{-1};
   bool can_directly_delete_{false};
   // Store the write guards of the pages that you're modifying here.
   std::deque<WritePageGuard> write_set_;
+  std::deque<int> path_;
 
   // You may want to use this when getting value, but not necessary.
   std::deque<ReadPageGuard> read_set_;
@@ -66,10 +69,16 @@ class Context {
     }
     return false;
   }
-  auto UpdateRootPage(page_id_t page_id) -> bool {
+  auto UpdateRootPage(page_id_t page_id, BufferPoolManager *bpm_) -> bool {
     if (std::nullopt != header_page_) {
       auto *root_page = header_page_->AsMut<BPlusTreeHeaderPage>();
-      root_page->root_page_id_ = page_id;
+      // get origin page
+      if(root_page->root_page_id_ != INVALID_PAGE_ID) {
+        ReadPageGuard guard = bpm_->FetchPageRead(root_page->root_page_id_);
+        root_page->root_page_id_ = page_id;
+      } else {
+        root_page->root_page_id_ = page_id;
+      }
       header_page_ = std::nullopt;
       return true;
     }
@@ -166,6 +175,7 @@ class BPlusTree {
   int leaf_max_size_;
   int internal_max_size_;
   page_id_t header_page_id_;
+  std::mutex little_latch_;
 };
 
 /**
