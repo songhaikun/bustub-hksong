@@ -40,84 +40,40 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Init(int max_size) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::KeyAt(int index) const -> KeyType {
-  try{
-  if (index >= 255 || index < 0) {
-    std::cout << "internal page: key at error" << std::endl;
-  }
   return array_[index].first;
-  } catch (std::exception &e) {
-    std::cout << e.what() << " internal page: key at error" << std::endl;
-  }
-  return KeyType();
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) {
-  try{
-  if (index >= 255 || index < 0) {
-    std::cout << "internal page: set key at error" << std::endl;
-  }
   array_[index].first = key;
-  } catch (std::exception &e) {
-    std::cout << e.what() << " internal page: set key at error" << std::endl;
-    throw e;
-  }
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetValueAt(int index, const ValueType &value) {
-  try{
-    if (index >= 255 || index < 0) {
-      std::cout << "internal page: set value at error" << std::endl;
-    }
-    array_[index].second = value;
-  } catch (std::exception &e) {
-    std::cout << e.what() << " internal page: set value at error" << std::endl;
-    throw e;
-  }
+  array_[index].second = value;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertKeyAndValueAt(int index, const KeyType &key, const ValueType &value) {
-  try{
-    if (index >= 1 && index <= GetSize() && GetSize() < GetMaxSize()) {
-      for (int i = GetSize() - 1; i >= index; --i) {
-        array_[i + 1] = array_[i];
-      }
-      array_[index].first = key;
-      array_[index].second = value;
-      IncreaseSize(1);
-    } else if(index >= 1 && index < GetSize() && GetSize() == GetMaxSize()) {
-      for (int i = GetSize() - 2; i >= index; --i) {
-        array_[i + 1] = array_[i];
-      }
-      array_[index].first = key;
-      array_[index].second = value;
-    }
-  }catch(std::exception &e) {
-    std::cout << e.what() << " internal page: InsertKeyAndValueAt error" << std::endl;
-    throw e;
+  if (index >= 1 && index <= GetSize() && GetSize() < GetMaxSize()) {
+    std::memmove(&array_[index + 1], &array_[index], (GetSize() - index) * sizeof(array_[0]));
+    IncreaseSize(1);
+  } else if(index >= 1 && index < GetSize() && GetSize() == GetMaxSize()) {
+    std::memmove(&array_[index + 1], &array_[index], (GetSize() - index - 1) * sizeof(array_[0]));
   }
+  array_[index].first = key;
+  array_[index].second = value;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::DeleteKeyAndValueAt(int index) {
-  try{
-    if (index >= 0 && index < GetSize()) {
-      if  (GetSize() != INTERNAL_PAGE_SIZE) {
-        for (int i = index; i < GetSize(); ++i) {
-          array_[i] = array_[i + 1];
-        }
-      } else {
-        for (int i = index; i < GetSize() - 1; ++i) {
-          array_[i] = array_[i + 1];
-        }
-      }
-      IncreaseSize(-1);
+  if (index >= 0 && index < GetSize()) {
+    if  (GetSize() != INTERNAL_PAGE_SIZE) {
+      std::memmove(&array_[index], &array_[index + 1], (GetSize() - index - 1) * sizeof(array_[0]));
+    } else {
+      std::memmove(&array_[index], &array_[index + 1], (GetSize() - index - 2) * sizeof(array_[0]));
     }
-  }catch(std::exception &e) {
-    std::cout << e.what() << " internal page: DeleteKeyAndValueAt error" << std::endl;
-    throw e;
+    IncreaseSize(-1);
   }
 }
 /*
@@ -126,16 +82,7 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::DeleteKeyAndValueAt(int index) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::ValueAt(int index) const -> ValueType {
-  try{
-    if (index >= 255 || index < 0) {
-      std::cout << "internal page: value at error" << std::endl;
-    }
-    return array_[index].second;  // TODO(hksong): may need be changed to index + 1
-  } catch (std::exception &e) {
-    std::cout << e.what() << " internal page: value at error" << std::endl;
-    throw e;
-  }
-  return ValueType();
+  return array_[index].second;  // TODO(hksong): may need be changed to index + 1
 }
 
 // valuetype for internalNode should be page id_t

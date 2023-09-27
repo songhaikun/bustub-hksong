@@ -25,7 +25,6 @@ BufferPoolManager::BufferPoolManager(size_t pool_size, DiskManager *disk_manager
   // we allocate a consecutive memory space for the buffer pool
   pages_ = new Page[pool_size_];
   replacer_ = std::make_unique<LRUKReplacer>(pool_size, replacer_k);
-
   // Initially, every page is in the free list.
   for (size_t i = 0; i < pool_size_; ++i) {
     free_list_.emplace_back(static_cast<int>(i));
@@ -77,6 +76,7 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
   *page_id = AllocatePage();
   pg->page_id_ = *page_id;
   page_table_[*page_id] = frame_id;  // record it
+  lock.unlock();
   // return page address
   BUSTUB_ASSERT(pg->pin_count_ == 1 && pg->is_dirty_ == false && pg->page_id_ != INVALID_PAGE_ID,
                 "newpage: error new page");
@@ -108,6 +108,7 @@ auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType
   // read from disk
   disk_manager_->ReadPage(page_id, pg->GetData());
   page_table_[page_id] = frame_id;
+  lock.unlock();
   BUSTUB_ASSERT(pg->pin_count_ == 1 && pg->is_dirty_ == false && pg->page_id_ != INVALID_PAGE_ID,
                 "fetchpage: error get page");
   return pg;

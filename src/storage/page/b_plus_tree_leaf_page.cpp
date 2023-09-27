@@ -54,96 +54,45 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::SetNextPageId(page_id_t next_page_id) { next_pa
  */
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(int index) const -> KeyType {
-  try {
-    if (index >= 255 || index < 0) {
-      std::cout << "leaf page: key at error" << std::endl;
-    }
-    return array_[index].first;
-  } catch(std::exception &e) {
-    std::cout << e.what() << "leaf page: key at error" << std::endl;
-    throw e;
-  }
-  return KeyType();
+  return array_[index].first;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::ValueAt(int index) const -> ValueType {
-  try {
-    if (index >= 255 || index < 0) {
-      std::cout << "leaf page: value at error" << std::endl;
-    }
-    return array_[index].second;
-  } catch(std::exception &e) {
-    std::cout << e.what() << "leaf page: value at error" << std::endl;
-    throw e;
-  }
+  return array_[index].second;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) {
-  try {
-    if (index >= 255 || index < 0) {
-      array_[index].first = key;
-  }
-  } catch(std::exception &e) {
-    std::cout << e.what() << "leaf page: set key at error" << std::endl;
-    throw e;
-  }
+  array_[index].first = key;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::SetValueAt(int index, const ValueType &value) {
-  try {
-    if (index >= 255 || index < 0) {
-      array_[index].second = value;
-    }
-  } catch(std::exception &e) {
-    std::cout << e.what() << "leaf page: set value at error" << std::endl;
-    throw e;
-  }
+  array_[index].second = value;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::InsertKeyAndValueAt(int index, const KeyType &key, const ValueType &value) {
-  try{
-    if (index >= 0 && index <= GetSize() && GetSize() < GetMaxSize()) {
-      for (int i = GetSize() - 1; i >= index; --i) {
-        array_[i + 1] = array_[i];
-      }
-      array_[index].first = key;
-      array_[index].second = value;
-      IncreaseSize(1);
-    } else if(index >= 0 && index < GetSize() && GetSize() == GetMaxSize()) {
-      for (int i = GetSize() - 2; i >= index; --i) {
-        array_[i + 1] = array_[i];
-      }
-      array_[index].first = key;
-      array_[index].second = value;
-    }
-  } catch(std::exception &e) {
-    std::cout << e.what() << "leaf page: insert key and value at error" << std::endl;
-    throw e;
+  if (index >= 0 && index <= GetSize() && GetSize() < GetMaxSize()) {
+    std::memmove(&array_[index + 1], &array_[index], (GetSize() - index) * sizeof(array_[0]));
+    IncreaseSize(1);
+  } else if(index >= 0 && index < GetSize() && GetSize() == GetMaxSize()) {
+    std::memmove(&array_[index + 1], &array_[index], (GetSize() - index - 1) * sizeof(array_[0]));
   }
+  array_[index].first = key;
+  array_[index].second = value;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::DeleteKeyAndValueAt(int index){
-  try {
   if (index >= 0 && index < GetSize()) {
-    if  (GetSize() != LEAF_PAGE_SIZE) {
-      for (int i = index; i < GetSize(); ++i) {
-        array_[i] = array_[i + 1];
-      }
+    if (GetSize() != LEAF_PAGE_SIZE) {
+      std::memmove(&array_[index], &array_[index + 1], (GetSize() - index - 1) * sizeof(array_[0]));
     } else {
-      for (int i = index; i < GetSize() - 1; ++i) {
-        array_[i] = array_[i + 1];
-      }
+      std::memmove(&array_[index], &array_[index + 1], (GetSize() - index - 2) * sizeof(array_[0]));
     }
     IncreaseSize(-1);
-  }
-  } catch(std::exception &e) {
-    std::cout << e.what() << "leaf page: delete key and value at error" << std::endl;
-    throw e;
   }
 }
 

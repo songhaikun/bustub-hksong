@@ -104,7 +104,8 @@ class BPlusTree {
 
   // Insert a key-value pair into this B+ tree.
   auto Insert(const KeyType &key, const ValueType &value, Transaction *txn = nullptr) -> bool;
-
+  auto InsertOptimistic(const KeyType &key, const ValueType &value, Transaction *txn = nullptr) -> bool;
+  auto Insertpessimistic(const KeyType &key, const ValueType &value, Transaction *txn = nullptr) -> bool;
   // Remove a key and its value from this B+ tree.
   void Remove(const KeyType &key, Transaction *txn);
 
@@ -176,6 +177,7 @@ class BPlusTree {
   int internal_max_size_;
   page_id_t header_page_id_;
   std::mutex little_latch_;
+  std::mutex opt_letch_;
 };
 
 /**

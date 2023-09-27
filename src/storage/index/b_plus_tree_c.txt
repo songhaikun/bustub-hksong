@@ -46,43 +46,49 @@ auto BPLUSTREE_TYPE::IsEmpty() const -> bool {
  */
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *txn) -> bool {
-  try{
+  // std::cout << "GetValue: " << key << std::endl;
   // get root page
-    if (header_page_id_ == INVALID_PAGE_ID) {
+  if (header_page_id_ == INVALID_PAGE_ID) {
+    return false;
+  }
+  ReadPageGuard header_guard = bpm_->FetchPageRead(header_page_id_);
+  const auto *header_page = header_guard.As<BPlusTreeHeaderPage>();
+  page_id_t root_page_id = header_page->root_page_id_;
+  if (root_page_id == INVALID_PAGE_ID) {
+    return false;
+  }
+  ReadPageGuard pg_guard = bpm_->FetchPageRead(root_page_id);
+  header_guard.Drop();
+  const auto *b_page = pg_guard.As<class BPlusTreePage>();
+  // loop and found value
+  while (!b_page->IsLeafPage()) {
+    const auto *bi_page = reinterpret_cast<const InternalPage *>(b_page);
+    // int i = bi_page->GetIndexLargerThanKey(key, comparator_);
+    // TODO(hksong): change it to binary search
+    int i = bi_page->GetIndexLargerThanKey(1, key, comparator_);
+    auto n_pid = static_cast<page_id_t>(bi_page->ValueAt(i - 1));
+    if (n_pid == INVALID_PAGE_ID) {
       return false;
     }
-    ReadPageGuard header_guard = bpm_->FetchPageRead(header_page_id_);
-    const auto *header_page = header_guard.As<BPlusTreeHeaderPage>();
-    page_id_t root_page_id = header_page->root_page_id_;
-    if (root_page_id == INVALID_PAGE_ID) {
+    if (n_pid == 0) {
+      // for debug
+      pthread_t threadId = pthread_self();
+      std::stringstream ss;
+      ss << threadId<< " para: " << key  << "max internal size" << internal_max_size_ << "leaf max size" << leaf_max_size_<< std::endl;
+      LOG_DEBUG("%s", ss.str().c_str());
       return false;
     }
-    ReadPageGuard pg_guard = bpm_->FetchPageRead(root_page_id);
-    header_guard.Drop();
-    const auto *b_page = pg_guard.As<class BPlusTreePage>();
-    // loop and found value
-    while (!b_page->IsLeafPage()) {
-      const auto *bi_page = reinterpret_cast<const InternalPage *>(b_page);
-      // int i = bi_page->GetIndexLargerThanKey(key, comparator_);
-      // TODO(hksong): change it to binary search
-      int i = bi_page->GetIndexLargerThanKey(1, key, comparator_);
-      auto n_pid = static_cast<page_id_t>(bi_page->ValueAt(i - 1));
-      if (n_pid == INVALID_PAGE_ID) {
-        return false;
-      }
-      pg_guard = bpm_->FetchPageRead(n_pid);
-      b_page = pg_guard.As<class BPlusTreePage>();
-    }
-    // get leaf node
-    const auto *bl_page = reinterpret_cast<const LeafPage *>(b_page);
-    int i = 0;
-    if (bl_page->GetIndexEqualToKey(i, key, comparator_)) {
-      result->push_back(bl_page->ValueAt(i));
-      return true;
-    }
-  } catch (const std::exception &e) {
-    std::cout << e.what() <<  " in GetValue" << std::endl;
-    throw e;
+    ReadPageGuard t_guard = bpm_->FetchPageRead(n_pid);
+    pg_guard = std::move(t_guard);
+    b_page = pg_guard.As<class BPlusTreePage>();
+  }
+  // get leaf node
+  const auto *bl_page = reinterpret_cast<const LeafPage *>(b_page);
+  // TODO(hksong): change it to binary search
+  int i = 0;
+  if (bl_page->GetIndexEqualToKey(i, key, comparator_)) {
+    result->push_back(bl_page->ValueAt(i));
+    return true;
   }
   return false;
 }
@@ -104,17 +110,79 @@ auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transact
   // std::stringstream ss;
   // ss << threadId<< " insert:" << key << ", " << value  << "max internal size" << internal_max_size_ << "leaf max size" << leaf_max_size_<< std::endl;
   // LOG_DEBUG("%s", ss.str().c_str());
+
+  // if (InsertOptimistic(key, value, txn)) {
+  //   return true;
+  // }
+
+  // std::cout << "opt failed: " << key << std::endl;
+  return Insertpessimistic(key, value, txn);
+}
+
+INDEX_TEMPLATE_ARGUMENTS
+auto BPLUSTREE_TYPE::InsertOptimistic(const KeyType &key, const ValueType &value, Transaction *txn) -> bool {
+  // WritePageGuard header_guard, w_guard;
+  // BasicPageGuard guard;
+  ReadPageGuard header_guard;
+  WritePageGuard w_guard;
+  BasicPageGuard guard;
   try{
     if (header_page_id_ == INVALID_PAGE_ID) {
       return false;
     }
-    WritePageGuard header_guard = bpm_->FetchPageWrite(header_page_id_);
+    header_guard = bpm_->FetchPageRead(header_page_id_);
+    auto *header_page = header_guard.As<BPlusTreeHeaderPage>();
+    page_id_t root_page_id = header_page->root_page_id_;
+    // new page
+    if (INVALID_PAGE_ID == root_page_id) {
+      return false;  // return to pessimistic
+    }
+    // insert page
+    bool need_split_root = false;
+    Context ctx;
+    // ctx.header_page_ = std::move(header_guard);
+    ctx.root_page_id_ = root_page_id;
+    // page_id_t last_id = -1;
+    w_guard = bpm_->FetchPageWrite(root_page_id);
+    auto *b_page = w_guard.AsMut<class BPlusTreePage>();
+    // ctx.write_set_.push_back(std::move(w_guard));
+    while (!b_page->IsLeafPage()) {
+      const auto *bi_page = reinterpret_cast<const InternalPage *>(b_page);
+      int i = bi_page->GetIndexLargerThanKey(1, key, comparator_);
+      auto n_pid = static_cast<page_id_t>(bi_page->ValueAt(i - 1));
+      BUSTUB_ASSERT(n_pid != INVALID_PAGE_ID, "get invalid page id");
+      w_guard = bpm_->FetchPageWrite(n_pid);
+      b_page = w_guard.AsMut<class BPlusTreePage>();
+    }
+    if(b_page->GetSize() < b_page->GetMaxSize()) {
+      ctx.write_set_.push_back(std::move(w_guard));
+      MappingType kv_map(key, value);
+      return InsertLeafPage(ctx, kv_map, need_split_root, txn);
+    }
+    return false;
+  } catch (const std::exception& e) {
+    std::cout << e.what() << std::endl;
+  }
+  return false;
+}
+
+INDEX_TEMPLATE_ARGUMENTS
+auto BPLUSTREE_TYPE::Insertpessimistic(const KeyType &key, const ValueType &value, Transaction *txn) -> bool {
+
+  WritePageGuard header_guard, w_guard;
+  BasicPageGuard guard;
+  try{
+    if (header_page_id_ == INVALID_PAGE_ID) {
+      return false;
+    }
+    header_guard = bpm_->FetchPageWrite(header_page_id_);
     auto *header_page = header_guard.AsMut<BPlusTreeHeaderPage>();
     page_id_t root_page_id = header_page->root_page_id_;
     // new page
     if (INVALID_PAGE_ID == root_page_id) {
       page_id_t pid = -1;
-      auto guard = bpm_->NewPageGuarded(&pid);
+      guard = bpm_->NewPageGuarded(&pid);
+      WritePageGuard w_guard = bpm_->FetchPageWrite(pid);
       if (-1 == pid) {
         printf("b_plus_tree: error in insert");
         return false;
@@ -132,36 +200,43 @@ auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transact
     // insert page
     bool need_split_root = true;
     Context ctx;
-    ctx.header_page_ = std::move(header_guard);
     ctx.root_page_id_ = root_page_id;
-    WritePageGuard guard = bpm_->FetchPageWrite(root_page_id);
-    auto *b_page = guard.AsMut<class BPlusTreePage>();
-    ctx.write_set_.push_back(std::move(guard));
-
+    // page_id_t last_id = -1;
+    w_guard = bpm_->FetchPageWrite(root_page_id);
+    auto *b_page = w_guard.AsMut<class BPlusTreePage>();
+    ctx.write_set_.push_back(std::move(w_guard));
+    if (b_page->GetSize() == b_page->GetMaxSize()) {
+      ctx.header_page_ = std::move(header_guard);
+    }
     while (!b_page->IsLeafPage()) {
       auto *bi_page = reinterpret_cast<InternalPage *>(b_page);
       int i = bi_page->GetIndexLargerThanKey(1, key, comparator_);
       auto n_pid = static_cast<page_id_t>(bi_page->ValueAt(i - 1));
       BUSTUB_ASSERT(n_pid != INVALID_PAGE_ID, "get invalid page id");
-      if (0 == n_pid) {
-        return false;
+      if (n_pid == 0) {
+        pthread_t threadId = pthread_self();
+        std::stringstream ss;
+        ss << threadId<< " para: " << key << ", " << value  << "max internal size" << internal_max_size_ << "leaf max size" << leaf_max_size_<< std::endl;
+        LOG_DEBUG("%s", ss.str().c_str());
+        return -1;
       }
+      // last_id = n_pid;
       // record sth
-      guard = bpm_->FetchPageWrite(n_pid);
-      b_page = guard.AsMut<class BPlusTreePage>();
+      WritePageGuard t_guard = bpm_->FetchPageWrite(n_pid);
+      w_guard = std::move(t_guard);
+      b_page = w_guard.AsMut<class BPlusTreePage>();
       // can safely insert
       if (b_page->GetSize() < b_page->GetMaxSize()) {
         ctx.write_set_.clear();
         ctx.header_page_ = std::nullopt;
         need_split_root = false;
       }
-      ctx.write_set_.push_back(std::move(guard));
+      ctx.write_set_.push_back(std::move(w_guard));
     }
     MappingType kv_map(key, value);
     return InsertLeafPage(ctx, kv_map, need_split_root, txn);
   } catch (const std::exception& e) {
-    std::cout << "Exception caught: " << e.what() << " in file " << __FILE__ << " at line " << __LINE__ << std::endl;
-    throw e;
+    std::cout << e.what() << std::endl;
   }
   return false;
 }
@@ -172,7 +247,6 @@ auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transact
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::InsertLeafPage(Context &ctx, MappingType &mapping, bool &need_split_root, Transaction *txn)
     -> bool {
-try{
   BUSTUB_ASSERT(!ctx.write_set_.empty(), "write set shouldn't empty");
   WritePageGuard guard = std::move(ctx.write_set_.back());
   ctx.write_set_.pop_back();
@@ -190,6 +264,7 @@ try{
   // need split
   page_id_t new_page_id = -1;
   BasicPageGuard new_page_guard = bpm_->NewPageGuarded(&new_page_id);
+  WritePageGuard w_new_page_guard = bpm_->FetchPageWrite(new_page_id);
   BUSTUB_ASSERT(new_page_id != -1, "new page error in insert leaf page");
   auto *new_page = new_page_guard.AsMut<LeafPage>();
   new_page->Init(leaf_max_size_);
@@ -230,7 +305,7 @@ try{
     ValueType record_value = b_page->ValueAt(b_page->GetMaxSize() - 1);
     b_page->InsertKeyAndValueAt(i, mapping.first, mapping.second);
     mid_key = b_page->KeyAt(mid_idx);
-    // TODO(hksong): need fix
+    // 1,2,3,4 insert:0 -> 0,1,2 + 3,4
     for (int i = mid_idx; i < b_page->GetMaxSize(); ++i) {
       new_page->InsertKeyAndValueAt(i - mid_idx, b_page->KeyAt(i), b_page->ValueAt(i));
     }
@@ -248,11 +323,6 @@ try{
   b_page->SetNextPageId(new_page_guard.PageId());
   ctx.last_insert_page_ = std::move(guard);
   return InsertInternalPage(ctx, mid_key, new_page_guard.PageId(), need_split_root, txn);
-} catch (const std::exception &e) {
-  std::cout << e.what() << "in insert leaf page" << std::endl;
-  throw e;
-}
-  return false;
 }
 
 /**
@@ -262,11 +332,11 @@ try{
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::InsertInternalPage(Context &ctx, const KeyType &key, page_id_t value, bool &need_split_root,
                                         Transaction *txn) -> bool {
-try{
   if (ctx.write_set_.empty()) {
     if (need_split_root) {
       page_id_t new_root_page_id = -1;
       BasicPageGuard root_guard = bpm_->NewPageGuarded(&new_root_page_id);
+      WritePageGuard w_guard = bpm_->FetchPageWrite(new_root_page_id);
       BUSTUB_ASSERT(new_root_page_id != -1, "new page error in insert leaf page");
       auto *root_page = root_guard.AsMut<InternalPage>();
       root_page->Init(internal_max_size_);
@@ -299,6 +369,7 @@ try{
   // need split
   page_id_t new_page_id = -1;
   BasicPageGuard new_internal_page_guard = bpm_->NewPageGuarded(&new_page_id);
+  WritePageGuard w_new_internal_page_guard = bpm_->FetchPageWrite(new_page_id);
   BUSTUB_ASSERT(new_page_id != -1, "new page error in insert leaf page");
   auto *new_page = new_internal_page_guard.AsMut<InternalPage>();
   new_page->Init(internal_max_size_);
@@ -358,72 +429,6 @@ try{
   ctx.last_page_id_ = guard.PageId();
   ctx.last_insert_page_ = std::move(guard);
   return InsertInternalPage(ctx, mid_key, new_internal_page_guard.PageId(), need_split_root, txn);
-} catch (std::exception &e) {
-  std::cout << e.what() << "in insert internal page" <<  std::endl;
-  throw e;
-}
-  return false;
-}
-
-/*****************************************************************************
- * REMOVE
- *****************************************************************************/
-/*
- * Delete key & value pair associated with input key
- * If current tree is empty, return immediately.
- * If not, User needs to first find the right leaf page as deletion target, then
- * delete entry from leaf page. Remember to deal with redistribute or merge if
- * necessary.
- */
-INDEX_TEMPLATE_ARGUMENTS
-void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *txn) {
-  // pthread_t threadId = pthread_self();
-  // std::stringstream ss;
-  // ss << threadId<< " insert:" << key  << "max internal size" << internal_max_size_ << "leaf max size" << leaf_max_size_<< std::endl;
-  // LOG_DEBUG("%s", ss.str().c_str());
-  try{
-    if (header_page_id_ == INVALID_PAGE_ID) {
-      return;
-    }
-    WritePageGuard header_guard = bpm_->FetchPageWrite(header_page_id_);
-    auto *header_page = header_guard.AsMut<BPlusTreeHeaderPage>();
-    page_id_t root_page_id = header_page->root_page_id_;
-    if(INVALID_PAGE_ID == root_page_id) {
-      return;
-    }
-    Context ctx;
-    // bool need_merge_root = true;
-    ctx.header_page_ = std::move(header_guard);
-    ctx.root_page_id_ = root_page_id;
-    WritePageGuard guard = bpm_->FetchPageWrite(root_page_id);
-    auto *b_page = guard.AsMut<class BPlusTreePage>();
-    ctx.write_set_.push_back(std::move(guard));
-    // find to the leaf page
-    while (!b_page->IsLeafPage()) {
-      auto *bi_page = reinterpret_cast<InternalPage *>(b_page);
-      int i = bi_page->GetIndexLargerThanKey(1, key, comparator_);
-      auto n_pid = static_cast<page_id_t>(bi_page->ValueAt(i - 1));
-      BUSTUB_ASSERT(n_pid != INVALID_PAGE_ID, "get invalid page id");
-      if (0 == n_pid) {
-        return;
-      }
-      // record sth
-      guard = bpm_->FetchPageWrite(n_pid);
-      b_page = guard.AsMut<class BPlusTreePage>();
-      // can safely delete
-      if (b_page->GetSize() > b_page->GetMinSize()) {  // delete can't cause root change
-        ctx.path_.clear();
-        ctx.write_set_.clear();
-        ctx.header_page_ = std::nullopt;  // release header page guard
-      }
-      ctx.path_.emplace_back(i - 1);
-      ctx.write_set_.push_back(std::move(guard));
-    }
-    DeleteLeafPage(ctx, key, txn);
-  } catch (const std::exception &e) {
-    std::cout << e.what() << "in remove" << std::endl;
-  }
-  return;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
@@ -460,7 +465,7 @@ void BPLUSTREE_TYPE::DeleteLeafPage(Context &ctx, const KeyType &key, Transactio
   // need merge or distribute, change node to parent node
   BUSTUB_ASSERT(!ctx.write_set_.empty(), "ctx should have parent node");
   ctx.can_directly_delete_ = false;
-  guard.Drop();
+  // guard.Drop();
   return DeleteInternalPage(ctx, txn);
 }
 
@@ -666,10 +671,70 @@ void BPLUSTREE_TYPE::DeleteInternalPage(Context &ctx, Transaction *txn) {
     }
     return;
   }
-  guard.Drop();
-  ori_guard.Drop();
-  neighbour_guard.Drop();
+  // guard.Drop();
+  // ori_guard.Drop();
+  // neighbour_guard.Drop();
   return DeleteInternalPage(ctx, txn);
+}
+
+/*****************************************************************************
+ * REMOVE
+ *****************************************************************************/
+/*
+ * Delete key & value pair associated with input key
+ * If current tree is empty, return immediately.
+ * If not, User needs to first find the right leaf page as deletion target, then
+ * delete entry from leaf page. Remember to deal with redistribute or merge if
+ * necessary.
+ */
+INDEX_TEMPLATE_ARGUMENTS
+void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *txn) {
+  // std::cout << "remove: " << key << std::endl;
+  // Declaration of context instance.
+  WritePageGuard header_guard, guard;
+  try{
+    if (header_page_id_ == INVALID_PAGE_ID) {
+      return;
+    }
+    WritePageGuard header_guard = bpm_->FetchPageWrite(header_page_id_);
+    auto *header_page = header_guard.AsMut<BPlusTreeHeaderPage>();
+    page_id_t root_page_id = header_page->root_page_id_;
+    if(INVALID_PAGE_ID == root_page_id) {
+      return;
+    }
+    Context ctx;
+    // bool need_merge_root = true;
+    ctx.header_page_ = std::move(header_guard);
+    ctx.root_page_id_ = root_page_id;
+    guard = bpm_->FetchPageWrite(root_page_id);
+    auto *b_page = guard.AsMut<class BPlusTreePage>();
+    ctx.write_set_.push_back(std::move(guard));
+    // find to the leaf page
+    while (!b_page->IsLeafPage()) {
+      auto *bi_page = reinterpret_cast<InternalPage *>(b_page);
+      int i = bi_page->GetIndexLargerThanKey(1, key, comparator_);
+      auto n_pid = static_cast<page_id_t>(bi_page->ValueAt(i - 1));
+      BUSTUB_ASSERT(n_pid != INVALID_PAGE_ID, "get invalid page id");
+      if (0 == n_pid) {
+        return ;
+      }
+      // record sth
+      guard = bpm_->FetchPageWrite(n_pid);
+      b_page = guard.AsMut<class BPlusTreePage>();
+      // can safely delete
+      if (b_page->GetSize() > b_page->GetMinSize()) {  // delete can't cause root change
+        ctx.path_.clear();
+        ctx.write_set_.clear();
+        ctx.header_page_ = std::nullopt;  // release header page guard
+      }
+      ctx.path_.emplace_back(i - 1);
+      ctx.write_set_.push_back(std::move(guard));
+    }
+    DeleteLeafPage(ctx, key, txn);
+  } catch (const std::exception &e) {
+    std::cout << e.what() << "in remove" << std::endl;
+  }
+  return;
 }
 
 /*****************************************************************************
@@ -682,7 +747,7 @@ void BPLUSTREE_TYPE::DeleteInternalPage(Context &ctx, Transaction *txn) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
-  std::cout << "Begin" << std::endl;
+  // std::cout << "Begin" << std::endl;
   try {
     if (header_page_id_ == INVALID_PAGE_ID) {
       return INDEXITERATOR_TYPE(0, 0, 0, nullptr, nullptr);
@@ -701,16 +766,18 @@ auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
     while (!b_page->IsLeafPage()) {
       const auto *bi_page = reinterpret_cast<const InternalPage *>(b_page);
       auto n_pid = static_cast<page_id_t>(bi_page->ValueAt(0));
-      BUSTUB_ASSERT(INVALID_PAGE_ID != n_pid, "n_pid should be valid");
       if (0 == n_pid) {
         std::cout << "in begin" << std::endl;
         return INDEXITERATOR_TYPE(0, 0, 0, nullptr, nullptr);
       }
-      pg_guard = bpm_->FetchPageWrite(n_pid);
+      BUSTUB_ASSERT(INVALID_PAGE_ID != n_pid, "n_pid should be valid");
+      WritePageGuard t_guard = bpm_->FetchPageWrite(n_pid);
+      pg_guard = std::move(t_guard);
       b_page = pg_guard.AsMut<class BPlusTreePage>();
     }
     // get leaf node
     auto *bl_page = reinterpret_cast<LeafPage *>(b_page);
+    // TODO(hksong): change it to binary search
     pg_guard.Drop();
     return INDEXITERATOR_TYPE(0, std::move(bl_page->GetSize()), reinterpret_cast<long long>(this), bpm_, bl_page);
   } catch (const std::exception &e) {
@@ -744,20 +811,32 @@ auto BPLUSTREE_TYPE::Begin(const KeyType &key) -> INDEXITERATOR_TYPE {
     // loop and found value
     while (!b_page->IsLeafPage()) {
       auto *bi_page = reinterpret_cast<InternalPage *>(b_page);
-      int i = bi_page->GetIndexLargerThanKey(1, key, comparator_);
+      int i = 1;
+      // TODO(hksong): change it to binary search
+      for (; i < bi_page->GetSize(); ++i) {
+        if (comparator_(bi_page->KeyAt(i), key) > 0) {
+          break;
+        }
+      }
       auto n_pid = static_cast<page_id_t>(bi_page->ValueAt(i - 1));
-      if (n_pid == INVALID_PAGE_ID || n_pid == 0) {
+      if (0 == n_pid) {
+        std::cout << "in begin(key) para:" << key << std::endl;
         return INDEXITERATOR_TYPE(0, 0, 0, nullptr, nullptr);
       }
-      pg_guard = bpm_->FetchPageWrite(n_pid);
+      if (n_pid == INVALID_PAGE_ID) {
+        return INDEXITERATOR_TYPE(0, 0, 0, nullptr, nullptr);
+      }
+      WritePageGuard t_guard = bpm_->FetchPageWrite(n_pid);
+      pg_guard = std::move(t_guard);
       b_page = pg_guard.AsMut<class BPlusTreePage>();
     }
     // get leaf node
     auto *bl_page = reinterpret_cast<LeafPage *>(b_page);
     // TODO(hksong): change it to binary search
-    int i = 0;
-    if (bl_page->GetIndexEqualToKey(i, key, comparator_)) {
-      return INDEXITERATOR_TYPE(i, std::move(bl_page->GetSize()), reinterpret_cast<long long>(this), bpm_, bl_page);
+    for (int i = 0; i < bl_page->GetSize(); ++i) {
+      if (comparator_(bl_page->KeyAt(i), key) == 0) {
+        return INDEXITERATOR_TYPE(i, std::move(bl_page->GetSize()), reinterpret_cast<long long>(this), bpm_, bl_page);
+      }
     }
   } catch (const std::exception &e) {
     std::cout << e.what() << "in begin(key)" << std::endl;
