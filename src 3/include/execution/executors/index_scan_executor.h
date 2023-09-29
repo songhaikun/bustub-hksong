@@ -46,8 +46,5 @@ public:
 private:
   /** The index scan plan node to be executed. */
   const IndexScanPlanNode *plan_;
-  BPlusTreeIndexForTwoIntegerColumn *tree_;
-  std::unique_ptr<IndexIterator<bustub::GenericKey<8>, bustub::RID, bustub::GenericComparator<8>>> iter_;
-  IndexInfo *index_info_;
 };
 } // namespace bustub

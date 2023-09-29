@@ -66,8 +66,5 @@ private:
   const TableInfo *table_info_;
   /** The child executor to obtain value from */
   std::unique_ptr<AbstractExecutor> child_executor_;
-
-  std::vector<IndexInfo *> index_infos_;
-  bool has_updated_{false};
 };
 } // namespace bustub

@@ -29,16 +29,18 @@ TEST(BPlusTreeTests, DeleteTest1) {
   auto key_schema = ParseCreateStatement("a bigint");
   GenericComparator<8> comparator(key_schema.get());
 
-  // auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
+  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
   // auto disk_manager = std::make_unique<DiskManagerMemory>(256 << 10);
-  auto disk_manager = std::make_unique<DiskManager>();
+  // auto disk_manager = std::make_unique<DiskManager>();
   auto *bpm = new BufferPoolManager(50, disk_manager.get());
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
   // create b+ tree
+  // BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree(
+  //     "foo_pk", header_page->GetPageId(), bpm, comparator, 3, 5);
   BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree(
-      "foo_pk", header_page->GetPageId(), bpm, comparator, 3, 5);
+      "foo_pk", header_page->GetPageId(), bpm, comparator);
   // GenericKey<8> index_key;
   // RID rid;
   // create transaction
@@ -66,7 +68,7 @@ TEST(BPlusTreeTests, DeleteTest1) {
   for (auto& t : thrds) {
     t.join();
   }
-  // tree.Print(bpm);
+  tree.Print(bpm);
 
   // std::cout << "finished" << std::endl;
   // tree.Print(bpm);
@@ -127,7 +129,7 @@ TEST(BPlusTreeTests, DeleteTest1) {
   // for (auto& t : thrds) {
   //   t.join();
   // }
-  // tree.Print(bpm);
+  tree.Print(bpm);
   // tree.Print(bpm);
   // tree.Print(bpm);
   // for (int i = 0; i < 10000; i++) {

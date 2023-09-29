@@ -52,8 +52,5 @@ public:
 private:
   /** The sequential scan plan node to be executed */
   const SeqScanPlanNode *plan_;
-  // std::shared_ptr<TableHeap> heap{nullptr};
-  std::unique_ptr<TableIterator> iter_{nullptr};
-  // TableHeap *heap;
 };
 } // namespace bustub

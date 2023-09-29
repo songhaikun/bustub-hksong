@@ -11,17 +11,35 @@
 //===----------------------------------------------------------------------===//
 
 #include "execution/executors/seq_scan_executor.h"
+#include "catalog/catalog.h"
+#include <unistd.h>
 
 namespace bustub {
 
 SeqScanExecutor::SeqScanExecutor(ExecutorContext *exec_ctx,
                                  const SeqScanPlanNode *plan)
-    : AbstractExecutor(exec_ctx) {}
+    : AbstractExecutor(exec_ctx), plan_(plan) {}
 
 void SeqScanExecutor::Init() {
-  throw NotImplementedException("SeqScanExecutor is not implemented");
+  iter_ = std::make_unique<TableIterator>(exec_ctx_->GetCatalog()->GetTable(plan_->GetTableOid())->table_->MakeIterator());
 }
 
-auto SeqScanExecutor::Next(Tuple *tuple, RID *rid) -> bool { return false; }
+auto SeqScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {
+  if (iter_->IsEnd()) {
+    return false;
+  }
+  std::pair<TupleMeta, Tuple> tuple_pair;
+  while (!iter_->IsEnd() && (tuple_pair = iter_->GetTuple()).first.is_deleted_) {
+    iter_->operator++();
+  }
+  
+  if (!iter_->IsEnd()) {
+    *tuple = std::move(tuple_pair.second);
+    *rid = iter_->GetRID();
+    iter_->operator++();
+    return true;
+  }
+  return false;
+}
 
-} // namespace bustub
+}  // namespace bustub
