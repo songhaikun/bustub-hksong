@@ -14,6 +14,7 @@
 
 #include "execution/executors/insert_executor.h"
 #include "storage/table/tuple.h"
+#include "type/type_id.h"
 
 namespace bustub {
 
@@ -32,26 +33,24 @@ auto InsertExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   if (has_inserted_) {
     return false;
   }
-  uint64_t cnt = 0;
-  auto schema = child_executor_->GetOutputSchema();
+  int cnt = 0;
   while (child_executor_->Next(tuple, rid)) {
     struct TupleMeta tuple_meta{INVALID_PAGE_ID, INVALID_PAGE_ID, false};
     auto rid1 = table_info_->table_->InsertTuple(tuple_meta, *tuple, exec_ctx_->GetLockManager(), exec_ctx_->GetTransaction(), plan_->TableOid());
-    cnt++;
+    if (!rid1) {
+      continue;
+    }
     // update the index
     for (auto index_info : index_infos_) {
-      auto key = tuple->KeyFromTuple(schema, *index_info->index_->GetKeySchema(), index_info->index_->GetKeyAttrs());
-      if (!index_info->index_->InsertEntry(key, rid1.value(), exec_ctx_->GetTransaction())) {
-        LOG_DEBUG("insert index error");
-      }
+      auto key = tuple->KeyFromTuple(table_info_->schema_, index_info->key_schema_, index_info->index_->GetKeyAttrs());
+      index_info->index_->InsertEntry(key, rid1.value(), exec_ctx_->GetTransaction());
     }
+    cnt++;
   }
-  Value value(BIGINT, cnt);
-  auto return_schema = Schema(std::vector<Column>{{"success_insert_count", TypeId::BIGINT}});
+
   std::vector<Value> values{};
-  values.push_back(value);
-  *tuple = {values, &return_schema};
-  // first return true, then return false as has no child
+  values.emplace_back(TypeId::INTEGER, cnt);
+  *tuple = {values, &plan_->OutputSchema()};
   has_inserted_ = true;
   return true;
 }

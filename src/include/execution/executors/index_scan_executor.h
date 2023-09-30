@@ -18,6 +18,7 @@
 #include "execution/executor_context.h"
 #include "execution/executors/abstract_executor.h"
 #include "execution/plans/index_scan_plan.h"
+#include "storage/index/b_plus_tree_index.h"
 #include "storage/table/tuple.h"
 
 namespace bustub {
@@ -48,6 +49,7 @@ private:
   const IndexScanPlanNode *plan_;
   BPlusTreeIndexForTwoIntegerColumn *tree_;
   std::unique_ptr<IndexIterator<bustub::GenericKey<8>, bustub::RID, bustub::GenericComparator<8>>> iter_;
-  IndexInfo *index_info_;
+  IndexInfo *index_info_{nullptr};
+  TableInfo *table_info_{nullptr};
 };
 } // namespace bustub

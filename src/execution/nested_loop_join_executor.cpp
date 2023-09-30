@@ -38,10 +38,7 @@ void NestedLoopJoinExecutor::Init() {
   Tuple tuple;
   RID rid;
   left_executor_->Init();
-  // std::cout << "linit\n";
   right_executor_->Init();
-  // std::cout << "rinit\n";
-  // record right table
   while (right_executor_->Next(&tuple, &rid)) {
     right_tuples_.push_back(tuple);
   }
@@ -83,6 +80,7 @@ auto NestedLoopJoinExecutor::InnerJoin(const Schema &schema, Tuple *tuple) -> bo
   }
   if (index_ == 0) { //index == 0
     while (left_executor_->Next(&left_tuple_, &left_rid_)) {
+      right_executor_->Init();
       for (const auto &right_tuple : right_tuples_) {
         index_ = (index_ + 1) % right_tuples_.size();
         if (plan_->Predicate()->EvaluateJoin(&left_tuple_, left_schema_, &right_tuple, right_schema_).GetAs<bool>()) {
@@ -96,10 +94,12 @@ auto NestedLoopJoinExecutor::InnerJoin(const Schema &schema, Tuple *tuple) -> bo
           *tuple = {value, &schema};
           return true;
         }
-      }
-    }
+      }  // end for loop
+
+    }  // end while
     index_ = right_tuples_.size() + 1;
-  }
+  }  // end if
+
   return false;
 }
 
@@ -126,6 +126,7 @@ auto NestedLoopJoinExecutor::LeftJoin(const Schema &schema, Tuple *tuple) -> boo
   }
   if (index_ == 0) { //index == 0
     while (left_executor_->Next(&left_tuple_, &left_rid_)) {
+      right_executor_->Init();
       is_matched_ = false;
       for (const auto &right_tuple : right_tuples_) {
         index_ = (index_ + 1) % right_tuples_.size();

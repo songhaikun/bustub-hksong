@@ -31,23 +31,20 @@ auto DeleteExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   if (has_deleted_) {
     return false;
   }
-  uint64_t cnt = 0;
-  auto schema = child_executor_->GetOutputSchema();
+  int cnt = 0;
   while (child_executor_->Next(tuple, rid)) {
     struct TupleMeta tuple_meta{INVALID_PAGE_ID, INVALID_PAGE_ID, true};
     // change ori state
     table_info_->table_->UpdateTupleMeta(tuple_meta, *rid);
     for (auto index_info : index_infos_) {
-      auto key = tuple->KeyFromTuple(schema, *index_info->index_->GetKeySchema(), index_info->index_->GetKeyAttrs());
+      auto key = tuple->KeyFromTuple(table_info_->schema_, *index_info->index_->GetKeySchema(), index_info->index_->GetKeyAttrs());
       index_info->index_->DeleteEntry(key, *rid, exec_ctx_->GetTransaction());
     }
     cnt++;
   }
-  Value value(BIGINT, cnt);
-  auto return_schema = Schema(std::vector<Column>{{"success_delete_count", TypeId::BIGINT}});
   std::vector<Value> values{};
-  values.push_back(value);
-  *tuple = {values, &return_schema};
+  values.emplace_back(TypeId::INTEGER, cnt);
+  *tuple = {values, &plan_->OutputSchema()};
   has_deleted_ = true;
   return true;
 }
