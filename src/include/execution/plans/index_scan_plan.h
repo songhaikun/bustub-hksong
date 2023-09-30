@@ -45,7 +45,7 @@ public:
   index_oid_t index_oid_;
 
   // Add anything you want here for index lookup
-
+  
 protected:
   auto PlanNodeToString() const -> std::string override {
     return fmt::format("IndexScan {{ index_oid={} }}", index_oid_);

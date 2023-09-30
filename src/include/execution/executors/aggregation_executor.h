@@ -77,10 +77,45 @@ public:
     for (uint32_t i = 0; i < agg_exprs_.size(); i++) {
       switch (agg_types_[i]) {
       case AggregationType::CountStarAggregate:
+        result->aggregates_[i] = result->aggregates_[i].Add({INTEGER, 1});
+        break;
       case AggregationType::CountAggregate:
+        if (!input.aggregates_[i].IsNull()) {
+          if(result->aggregates_[i].IsNull()) {
+            result->aggregates_[i] = Value(INTEGER, 0);
+          }
+          result->aggregates_[i] = result->aggregates_[i].Add({INTEGER, 1});
+        }
+        break;
       case AggregationType::SumAggregate:
+        if (!input.aggregates_[i].IsNull()) {
+          if (result->aggregates_[i].IsNull()) {
+            result->aggregates_[i] = Value(INTEGER, 0);
+          }
+          if (input.aggregates_[i].CheckInteger()) {
+            result->aggregates_[i] = result->aggregates_[i].Add(input.aggregates_[i]);
+          }
+        }
+        break;
       case AggregationType::MinAggregate:
+        if (!input.aggregates_[i].IsNull()) {
+          if (result->aggregates_[i].IsNull()) {
+            result->aggregates_[i] = input.aggregates_[i];
+          }
+          if (input.aggregates_[i].CheckInteger()) {
+            result->aggregates_[i] = result->aggregates_[i].Min(input.aggregates_[i]);
+          }
+        }
+        break;
       case AggregationType::MaxAggregate:
+        if (!input.aggregates_[i].IsNull()) {
+          if (result->aggregates_[i].IsNull()) {
+            result->aggregates_[i] = input.aggregates_[i];
+          }
+          if (input.aggregates_[i].CheckInteger()) {
+            result->aggregates_[i] = result->aggregates_[i].Max(input.aggregates_[i]);
+          }
+        }
         break;
       }
     }
@@ -213,13 +248,12 @@ private:
 private:
   /** The aggregation plan node */
   const AggregationPlanNode *plan_;
-  /** The child executor that produces tuples over which the aggregation is
-   * computed */
+  /** The child executor that produces tuples over which the aggregation is computed */
   std::unique_ptr<AbstractExecutor> child_;
   /** Simple aggregation hash table */
-  // TODO(Student): Uncomment SimpleAggregationHashTable aht_;
+  SimpleAggregationHashTable aht_;
   /** Simple aggregation hash table iterator */
-  // TODO(Student): Uncomment SimpleAggregationHashTable::Iterator
-  // aht_iterator_;
+  SimpleAggregationHashTable::Iterator aht_iterator_;
+  bool has_agg{false};
 };
 } // namespace bustub

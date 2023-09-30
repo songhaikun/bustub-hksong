@@ -701,7 +701,7 @@ void BPLUSTREE_TYPE::DeleteInternalPage(Context &ctx, Transaction *txn) {
  */
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
-  std::cout << "Begin" << std::endl;
+  // std::cout << "Begin" << std::endl;
   try {
     if (header_page_id_ == INVALID_PAGE_ID) {
       return INDEXITERATOR_TYPE(0, 0, 0, nullptr, nullptr);

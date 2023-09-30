@@ -25,9 +25,9 @@ INDEXITERATOR_TYPE::~IndexIterator() = default;  // NOLINT
 INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::IsEnd() -> bool {
   if(nullptr == bpm_ || nullptr == cur_page_) {
-    return false;
+    return true;
   }
-  return cur_page_->GetNextPageId() == INVALID_PAGE_ID;
+  return is_end_page_;
 }
 
 INDEX_TEMPLATE_ARGUMENTS

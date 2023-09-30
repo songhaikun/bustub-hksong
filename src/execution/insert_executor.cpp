@@ -33,18 +33,15 @@ auto InsertExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
     return false;
   }
   uint64_t cnt = 0;
-  // auto schema = child_executor_->GetOutputSchema();
+  auto schema = child_executor_->GetOutputSchema();
   while (child_executor_->Next(tuple, rid)) {
     struct TupleMeta tuple_meta{INVALID_PAGE_ID, INVALID_PAGE_ID, false};
-    if (table_info_->table_->InsertTuple(tuple_meta, *tuple, exec_ctx_->GetLockManager(), exec_ctx_->GetTransaction(), plan_->TableOid())) {
-      cnt++;
-    } else {
-      LOG_DEBUG("insert tuple error");
-    }
+    auto rid1 = table_info_->table_->InsertTuple(tuple_meta, *tuple, exec_ctx_->GetLockManager(), exec_ctx_->GetTransaction(), plan_->TableOid());
+    cnt++;
     // update the index
     for (auto index_info : index_infos_) {
-      // auto key = tuple->KeyFromTuple(schema, *index_info->index_->GetKeySchema(), index_info->index_->GetKeyAttrs());
-      if (!index_info->index_->InsertEntry(*tuple, *rid, exec_ctx_->GetTransaction())) {
+      auto key = tuple->KeyFromTuple(schema, *index_info->index_->GetKeySchema(), index_info->index_->GetKeyAttrs());
+      if (!index_info->index_->InsertEntry(key, rid1.value(), exec_ctx_->GetTransaction())) {
         LOG_DEBUG("insert index error");
       }
     }

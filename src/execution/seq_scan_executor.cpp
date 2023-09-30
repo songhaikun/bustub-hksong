@@ -28,15 +28,15 @@ auto SeqScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {
   if (iter_->IsEnd()) {
     return false;
   }
-  std::pair<TupleMeta, Tuple> tuple_pair;
-  while (!iter_->IsEnd() && (tuple_pair = iter_->GetTuple()).first.is_deleted_) {
-    iter_->operator++();
-  }
-  
-  if (!iter_->IsEnd()) {
-    *tuple = std::move(tuple_pair.second);
+  while (!iter_->IsEnd()) {
+    auto [meta, tuple_] = iter_->GetTuple();
+    if (meta.is_deleted_) {
+      ++(*iter_);
+      continue;
+    }
+    *tuple = tuple_;
     *rid = iter_->GetRID();
-    iter_->operator++();
+    ++(*iter_);
     return true;
   }
   return false;

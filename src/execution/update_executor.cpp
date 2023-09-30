@@ -32,13 +32,15 @@ auto UpdateExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
     return false;
   }
   uint64_t cnt = 0;
+  auto schema = child_executor_->GetOutputSchema();
   while (child_executor_->Next(tuple, rid)) {
     struct TupleMeta delete_tuple_meta{INVALID_PAGE_ID, INVALID_PAGE_ID, true};
     struct TupleMeta insert_tuple_meta{INVALID_PAGE_ID, INVALID_PAGE_ID, false};
     // change ori state (delete)
     table_info_->table_->UpdateTupleMeta(delete_tuple_meta, *rid);
     for (auto index_info : index_infos_) {
-      index_info->index_->DeleteEntry(*tuple, *rid, exec_ctx_->GetTransaction());
+      auto key = tuple->KeyFromTuple(schema, *index_info->index_->GetKeySchema(), index_info->index_->GetKeyAttrs());
+      index_info->index_->DeleteEntry(key, *rid, exec_ctx_->GetTransaction());
     }
     // insert new tuple
     std::vector<Value> values;
@@ -47,11 +49,12 @@ auto UpdateExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
       values.push_back(expr->Evaluate(tuple, child_executor_->GetOutputSchema()));
     }
     auto insert_tuple = Tuple(values, &child_executor_->GetOutputSchema());
-    table_info_->table_->InsertTuple(insert_tuple_meta, insert_tuple, exec_ctx_->GetLockManager(),
+    auto rid1 = table_info_->table_->InsertTuple(insert_tuple_meta, insert_tuple, exec_ctx_->GetLockManager(),
                                      exec_ctx_->GetTransaction(), plan_->TableOid());
     // update the index 
     for (auto index_info : index_infos_) {
-      index_info->index_->InsertEntry(insert_tuple, *rid, exec_ctx_->GetTransaction());
+      auto key = insert_tuple.KeyFromTuple(schema, *index_info->index_->GetKeySchema(), index_info->index_->GetKeyAttrs());
+      index_info->index_->InsertEntry(key, rid1.value(), exec_ctx_->GetTransaction());
     }
     cnt++;
   }
