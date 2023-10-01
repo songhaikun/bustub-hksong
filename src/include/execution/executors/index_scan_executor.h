@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "common/rid.h"
@@ -28,7 +29,7 @@ namespace bustub {
  */
 
 class IndexScanExecutor : public AbstractExecutor {
-public:
+ public:
   /**
    * Creates a new index scan executor.
    * @param exec_ctx the executor context
@@ -36,15 +37,13 @@ public:
    */
   IndexScanExecutor(ExecutorContext *exec_ctx, const IndexScanPlanNode *plan);
 
-  auto GetOutputSchema() const -> const Schema & override {
-    return plan_->OutputSchema();
-  }
+  auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); }
 
   void Init() override;
 
   auto Next(Tuple *tuple, RID *rid) -> bool override;
 
-private:
+ private:
   /** The index scan plan node to be executed. */
   const IndexScanPlanNode *plan_;
   BPlusTreeIndexForTwoIntegerColumn *tree_;
@@ -52,4 +51,4 @@ private:
   IndexInfo *index_info_{nullptr};
   TableInfo *table_info_{nullptr};
 };
-} // namespace bustub
+}  // namespace bustub

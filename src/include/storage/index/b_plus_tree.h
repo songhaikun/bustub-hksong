@@ -73,7 +73,7 @@ class Context {
     if (std::nullopt != header_page_) {
       auto *root_page = header_page_->AsMut<BPlusTreeHeaderPage>();
       // get origin page
-      if(root_page->root_page_id_ != INVALID_PAGE_ID) {
+      if (root_page->root_page_id_ != INVALID_PAGE_ID) {
         ReadPageGuard guard = bpm_->FetchPageRead(root_page->root_page_id_);
         root_page->root_page_id_ = page_id;
       } else {
@@ -163,7 +163,8 @@ class BPlusTree {
 
   auto InsertLeafPage(Context &ctx, MappingType &mapping, bool &need_split_root, Transaction *txn) -> bool;
 
-  auto InsertInternalPage(Context &ctx, const KeyType &key, page_id_t value, bool &need_split_root, Transaction *txn) -> bool;
+  auto InsertInternalPage(Context &ctx, const KeyType &key, page_id_t value, bool &need_split_root, Transaction *txn)
+      -> bool;
 
   void DeleteLeafPage(Context &ctx, const KeyType &key, Transaction *txn);
 

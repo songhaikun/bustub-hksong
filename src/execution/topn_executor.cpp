@@ -4,27 +4,26 @@ namespace bustub {
 
 TopNExecutor::TopNExecutor(ExecutorContext *exec_ctx, const TopNPlanNode *plan,
                            std::unique_ptr<AbstractExecutor> &&child_executor)
-    : AbstractExecutor(exec_ctx), plan_(plan), child_executor_(std::move(child_executor)) {
-}
+    : AbstractExecutor(exec_ctx), plan_(plan), child_executor_(std::move(child_executor)) {}
 
 void TopNExecutor::Init() {
   child_executor_->Init();
   // use priority queue to record data
   auto topn_comparator = [&](const Tuple &a, const Tuple &b) -> bool {
     for (auto [otype, expr] : plan_->GetOrderBy()) {
-      if (expr->Evaluate(&a, child_executor_->GetOutputSchema()).CompareEquals(
-            expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
+      if (expr->Evaluate(&a, child_executor_->GetOutputSchema())
+              .CompareEquals(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
         continue;
       }
       if (otype == OrderByType::DEFAULT || otype == OrderByType::ASC) {
-        return (expr->Evaluate(&a, child_executor_->GetOutputSchema()).CompareLessThan(
-            expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue);
-      } else if (otype == OrderByType::DESC) {
-        return (expr->Evaluate(&a, child_executor_->GetOutputSchema()).CompareGreaterThan(
-          expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue);
-      } else {
-        return false;
+        return (expr->Evaluate(&a, child_executor_->GetOutputSchema())
+                    .CompareLessThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue);
       }
+      if (otype == OrderByType::DESC) {
+        return (expr->Evaluate(&a, child_executor_->GetOutputSchema())
+                    .CompareGreaterThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue);
+      }
+      return false;
     }
     return false;
   };
@@ -53,8 +52,6 @@ auto TopNExecutor::Next(Tuple *tuple, RID *rid) -> bool {
   return false;
 }
 
-auto TopNExecutor::GetNumInHeap() -> size_t {
-  return child_tuples_.size();
-};
+auto TopNExecutor::GetNumInHeap() -> size_t { return child_tuples_.size(); };
 
-} // namespace bustub
+}  // namespace bustub

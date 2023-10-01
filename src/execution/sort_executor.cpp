@@ -4,8 +4,7 @@ namespace bustub {
 
 SortExecutor::SortExecutor(ExecutorContext *exec_ctx, const SortPlanNode *plan,
                            std::unique_ptr<AbstractExecutor> &&child_executor)
-    : AbstractExecutor(exec_ctx), plan_(plan), child_executor_(std::move(child_executor)),
-      obs_(plan_->GetOrderBy()) {}
+    : AbstractExecutor(exec_ctx), plan_(plan), child_executor_(std::move(child_executor)), obs_(plan_->GetOrderBy()) {}
 
 void SortExecutor::Init() {
   child_executor_->Init();
@@ -21,28 +20,28 @@ void SortExecutor::Init() {
     // use order_bys
     for (auto [otype, expr] : obs_) {
       if (otype == OrderByType::DEFAULT || otype == OrderByType::ASC) {
-        if (expr->Evaluate(&a, child_executor_->GetOutputSchema()).CompareLessThan(
-            expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
+        if (expr->Evaluate(&a, child_executor_->GetOutputSchema())
+                .CompareLessThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
           return true;
-        } else if (expr->Evaluate(&a, child_executor_->GetOutputSchema()).CompareGreaterThan(
-            expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
-          return false;
-        } else {
-          continue;
         }
-      } else if (otype == OrderByType::DESC) {
-        if (expr->Evaluate(&a, child_executor_->GetOutputSchema()).CompareLessThan(
-            expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
+        if (expr->Evaluate(&a, child_executor_->GetOutputSchema())
+                .CompareGreaterThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
           return false;
-        } else if (expr->Evaluate(&a, child_executor_->GetOutputSchema()).CompareGreaterThan(
-            expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
-          return true;
-        } else {
-          continue;
         }
-      } else {
-        return false;
+        continue;
       }
+      if (otype == OrderByType::DESC) {
+        if (expr->Evaluate(&a, child_executor_->GetOutputSchema())
+                .CompareLessThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
+          return false;
+        }
+        if (expr->Evaluate(&a, child_executor_->GetOutputSchema())
+                .CompareGreaterThan(expr->Evaluate(&b, child_executor_->GetOutputSchema())) == CmpBool::CmpTrue) {
+          return true;
+        }
+        continue;
+      }
+      return false;
     }
     return false;
   });
@@ -58,4 +57,4 @@ auto SortExecutor::Next(Tuple *tuple, RID *rid) -> bool {
   }
   return false;
 }
-} // namespace bustub
+}  // namespace bustub

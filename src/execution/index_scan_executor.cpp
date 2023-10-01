@@ -12,16 +12,15 @@
 #include "execution/executors/index_scan_executor.h"
 
 namespace bustub {
-IndexScanExecutor::IndexScanExecutor(ExecutorContext *exec_ctx,
-                                     const IndexScanPlanNode *plan)
+IndexScanExecutor::IndexScanExecutor(ExecutorContext *exec_ctx, const IndexScanPlanNode *plan)
     : AbstractExecutor(exec_ctx), plan_(plan) {}
 
 void IndexScanExecutor::Init() {
   index_info_ = exec_ctx_->GetCatalog()->GetIndex(plan_->GetIndexOid());
   table_info_ = exec_ctx_->GetCatalog()->GetTable(index_info_->table_name_);
   tree_ = dynamic_cast<BPlusTreeIndexForTwoIntegerColumn *>(index_info_->index_.get());
-  iter_ = std::make_unique<IndexIterator<bustub::GenericKey<8>, bustub::RID, bustub::GenericComparator<8>>>(tree_->GetBeginIterator());
-
+  iter_ = std::make_unique<IndexIterator<bustub::GenericKey<8>, bustub::RID, bustub::GenericComparator<8>>>(
+      tree_->GetBeginIterator());
 }
 
 auto IndexScanExecutor::Next(Tuple *tuple, RID *rid) -> bool {

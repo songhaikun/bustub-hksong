@@ -53,44 +53,40 @@ void B_PLUS_TREE_LEAF_PAGE_TYPE::SetNextPageId(page_id_t next_page_id) { next_pa
  * array offset)
  */
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(int index) const -> KeyType {
-  return array_[index].first;
-}
+auto B_PLUS_TREE_LEAF_PAGE_TYPE::KeyAt(int index) const -> KeyType { return array_[index].first; }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_LEAF_PAGE_TYPE::ValueAt(int index) const -> ValueType {
-  return array_[index].second;
-}
+auto B_PLUS_TREE_LEAF_PAGE_TYPE::ValueAt(int index) const -> ValueType { return array_[index].second; }
 
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) {
-  array_[index].first = key;
-}
+void B_PLUS_TREE_LEAF_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) { array_[index].first = key; }
 
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::SetValueAt(int index, const ValueType &value) {
-  array_[index].second = value;
-}
+void B_PLUS_TREE_LEAF_PAGE_TYPE::SetValueAt(int index, const ValueType &value) { array_[index].second = value; }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_LEAF_PAGE_TYPE::InsertKeyAndValueAt(int index, const KeyType &key, const ValueType &value) {
   if (index >= 0 && index <= GetSize() && GetSize() < GetMaxSize()) {
-    std::memmove(&array_[index + 1], &array_[index], (GetSize() - index) * sizeof(array_[0]));
+    std::memmove(reinterpret_cast<char *>(&array_[index + 1]), reinterpret_cast<char *>(&array_[index]),
+                 (GetSize() - index) * sizeof(array_[0]));
     IncreaseSize(1);
-  } else if(index >= 0 && index < GetSize() && GetSize() == GetMaxSize()) {
-    std::memmove(&array_[index + 1], &array_[index], (GetSize() - index - 1) * sizeof(array_[0]));
+  } else if (index >= 0 && index < GetSize() && GetSize() == GetMaxSize()) {
+    std::memmove(reinterpret_cast<char *>(&array_[index + 1]), reinterpret_cast<char *>(&array_[index]),
+                 (GetSize() - index - 1) * sizeof(array_[0]));
   }
   array_[index].first = key;
   array_[index].second = value;
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::DeleteKeyAndValueAt(int index){
+void B_PLUS_TREE_LEAF_PAGE_TYPE::DeleteKeyAndValueAt(int index) {
   if (index >= 0 && index < GetSize()) {
     if (GetSize() != LEAF_PAGE_SIZE) {
-      std::memmove(&array_[index], &array_[index + 1], (GetSize() - index - 1) * sizeof(array_[0]));
+      std::memmove(reinterpret_cast<char *>(&array_[index]), reinterpret_cast<char *>(&array_[index + 1]),
+                   (GetSize() - index - 1) * sizeof(array_[0]));
     } else {
-      std::memmove(&array_[index], &array_[index + 1], (GetSize() - index - 2) * sizeof(array_[0]));
+      std::memmove(reinterpret_cast<char *>(&array_[index]), reinterpret_cast<char *>(&array_[index + 1]),
+                   (GetSize() - index - 2) * sizeof(array_[0]));
     }
     IncreaseSize(-1);
   }

@@ -28,7 +28,7 @@ namespace bustub {
  * Deleted values are always pulled from a child.
  */
 class DeleteExecutor : public AbstractExecutor {
-public:
+ public:
   /**
    * Construct a new DeleteExecutor instance.
    * @param exec_ctx The executor context
@@ -56,11 +56,9 @@ public:
   auto Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool override;
 
   /** @return The output schema for the delete */
-  auto GetOutputSchema() const -> const Schema & override {
-    return plan_->OutputSchema();
-  };
+  auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); };
 
-private:
+ private:
   /** The delete plan node to be executed */
   const DeletePlanNode *plan_;
   /** The child executor from which RIDs for deleted tuples are pulled */
@@ -70,4 +68,4 @@ private:
   const TableInfo *table_info_;
   bool has_deleted_{false};
 };
-} // namespace bustub
+}  // namespace bustub

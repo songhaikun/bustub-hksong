@@ -18,12 +18,13 @@
 
 namespace bustub {
 
-AggregationExecutor::AggregationExecutor(
-    ExecutorContext *exec_ctx, const AggregationPlanNode *plan,
-    std::unique_ptr<AbstractExecutor> &&child)
-    : AbstractExecutor(exec_ctx), plan_(plan), child_(std::move(child)),
+AggregationExecutor::AggregationExecutor(ExecutorContext *exec_ctx, const AggregationPlanNode *plan,
+                                         std::unique_ptr<AbstractExecutor> &&child)
+    : AbstractExecutor(exec_ctx),
+      plan_(plan),
+      child_(std::move(child)),
       aht_(plan_->GetAggregates(), plan_->GetAggregateTypes()),
-      aht_iterator_(aht_.Begin()){}
+      aht_iterator_(aht_.Begin()) {}
 
 void AggregationExecutor::Init() {
   child_->Init();
@@ -31,7 +32,7 @@ void AggregationExecutor::Init() {
   RID rid;
   // build hash table
   while (child_->Next(&tuple, &rid)) {
-    auto agg_key =  MakeAggregateKey(&tuple);
+    auto agg_key = MakeAggregateKey(&tuple);
     auto agg_value = MakeAggregateValue(&tuple);
     aht_.InsertCombine(agg_key, agg_value);
   }
@@ -48,11 +49,11 @@ auto AggregationExecutor::Next(Tuple *tuple, RID *rid) -> bool {
     }
     *tuple = {values, &schema};
     ++aht_iterator_;
-    has_agg = true;
+    has_agg_ = true;
     return true;
   }
   // empty table, return 0 + null, null...
-  if (!has_agg && plan_->group_bys_.empty()) {
+  if (!has_agg_ && plan_->group_bys_.empty()) {
     std::vector<Value> values;
     for (auto agg_type : plan_->agg_types_) {
       switch (agg_type) {
@@ -68,14 +69,12 @@ auto AggregationExecutor::Next(Tuple *tuple, RID *rid) -> bool {
       }
     }
     *tuple = {values, &schema};
-    has_agg = true;
+    has_agg_ = true;
     return true;
   }
   return false;
 }
 
-auto AggregationExecutor::GetChildExecutor() const -> const AbstractExecutor * {
-  return child_.get();
-}
+auto AggregationExecutor::GetChildExecutor() const -> const AbstractExecutor * { return child_.get(); }
 
-} // namespace bustub
+}  // namespace bustub

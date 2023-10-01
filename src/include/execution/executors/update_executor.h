@@ -31,7 +31,7 @@ namespace bustub {
 class UpdateExecutor : public AbstractExecutor {
   friend class UpdatePlanNode;
 
-public:
+ public:
   /**
    * Construct a new UpdateExecutor instance.
    * @param exec_ctx The executor context
@@ -55,11 +55,9 @@ public:
   auto Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool override;
 
   /** @return The output schema for the update */
-  auto GetOutputSchema() const -> const Schema & override {
-    return plan_->OutputSchema();
-  }
+  auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); }
 
-private:
+ private:
   /** The update plan node to be executed */
   const UpdatePlanNode *plan_;
   /** Metadata identifying the table that should be updated */
@@ -70,4 +68,4 @@ private:
   std::vector<IndexInfo *> index_infos_;
   bool has_updated_{false};
 };
-} // namespace bustub
+}  // namespace bustub

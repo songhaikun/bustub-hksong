@@ -163,7 +163,7 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
   auto iter = page_table_.find(page_id);
   // not in pool
   if (iter == page_table_.end()) {
-    if(removed_pages_index_.find(page_id) == removed_pages_index_.end() && page_id < next_page_id_) {
+    if (removed_pages_index_.find(page_id) == removed_pages_index_.end() && page_id < next_page_id_) {
       removed_pages_.push_front(page_id);
       removed_pages_index_.insert(page_id);
     }
@@ -195,7 +195,7 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
 }
 
 auto BufferPoolManager::AllocatePage() -> page_id_t {
-  if(!removed_pages_.empty()) {
+  if (!removed_pages_.empty()) {
     page_id_t page_id = removed_pages_.back();
     removed_pages_index_.erase(page_id);
     removed_pages_.pop_back();

@@ -9,8 +9,7 @@
 
 namespace bustub {
 
-auto Optimizer::OptimizeCustom(const AbstractPlanNodeRef &plan)
-    -> AbstractPlanNodeRef {
+auto Optimizer::OptimizeCustom(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef {
   auto p = plan;
   p = OptimizeMergeProjection(p);
   p = OptimizeMergeFilterNLJ(p);
@@ -20,4 +19,4 @@ auto Optimizer::OptimizeCustom(const AbstractPlanNodeRef &plan)
   return p;
 }
 
-} // namespace bustub
+}  // namespace bustub

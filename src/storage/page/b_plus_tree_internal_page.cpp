@@ -39,27 +39,23 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::Init(int max_size) {
  * array offset)
  */
 INDEX_TEMPLATE_ARGUMENTS
-auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::KeyAt(int index) const -> KeyType {
-  return array_[index].first;
-}
+auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::KeyAt(int index) const -> KeyType { return array_[index].first; }
 
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) {
-  array_[index].first = key;
-}
+void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetKeyAt(int index, const KeyType &key) { array_[index].first = key; }
 
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetValueAt(int index, const ValueType &value) {
-  array_[index].second = value;
-}
+void B_PLUS_TREE_INTERNAL_PAGE_TYPE::SetValueAt(int index, const ValueType &value) { array_[index].second = value; }
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertKeyAndValueAt(int index, const KeyType &key, const ValueType &value) {
   if (index >= 1 && index <= GetSize() && GetSize() < GetMaxSize()) {
-    std::memmove(&array_[index + 1], &array_[index], (GetSize() - index) * sizeof(array_[0]));
+    std::memmove(reinterpret_cast<char *>(&array_[index + 1]), reinterpret_cast<char *>(&array_[index]),
+                 (GetSize() - index) * sizeof(array_[0]));
     IncreaseSize(1);
-  } else if(index >= 1 && index < GetSize() && GetSize() == GetMaxSize()) {
-    std::memmove(&array_[index + 1], &array_[index], (GetSize() - index - 1) * sizeof(array_[0]));
+  } else if (index >= 1 && index < GetSize() && GetSize() == GetMaxSize()) {
+    std::memmove(reinterpret_cast<char *>(&array_[index + 1]), reinterpret_cast<char *>(&array_[index]),
+                 (GetSize() - index - 1) * sizeof(array_[0]));
   }
   array_[index].first = key;
   array_[index].second = value;
@@ -68,10 +64,12 @@ void B_PLUS_TREE_INTERNAL_PAGE_TYPE::InsertKeyAndValueAt(int index, const KeyTyp
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_INTERNAL_PAGE_TYPE::DeleteKeyAndValueAt(int index) {
   if (index >= 0 && index < GetSize()) {
-    if  (GetSize() != INTERNAL_PAGE_SIZE) {
-      std::memmove(&array_[index], &array_[index + 1], (GetSize() - index - 1) * sizeof(array_[0]));
+    if (GetSize() != INTERNAL_PAGE_SIZE) {
+      std::memmove(reinterpret_cast<char *>(&array_[index]), reinterpret_cast<char *>(&array_[index + 1]),
+                   (GetSize() - index - 1) * sizeof(array_[0]));
     } else {
-      std::memmove(&array_[index], &array_[index + 1], (GetSize() - index - 2) * sizeof(array_[0]));
+      std::memmove(reinterpret_cast<char *>(&array_[index]), reinterpret_cast<char *>(&array_[index + 1]),
+                   (GetSize() - index - 2) * sizeof(array_[0]));
     }
     IncreaseSize(-1);
   }

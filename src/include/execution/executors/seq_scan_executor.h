@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "execution/executor_context.h"
@@ -25,7 +26,7 @@ namespace bustub {
  * The SeqScanExecutor executor executes a sequential table scan.
  */
 class SeqScanExecutor : public AbstractExecutor {
-public:
+ public:
   /**
    * Construct a new SeqScanExecutor instance.
    * @param exec_ctx The executor context
@@ -45,13 +46,11 @@ public:
   auto Next(Tuple *tuple, RID *rid) -> bool override;
 
   /** @return The output schema for the sequential scan */
-  auto GetOutputSchema() const -> const Schema & override {
-    return plan_->OutputSchema();
-  }
+  auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); }
 
-private:
+ private:
   /** The sequential scan plan node to be executed */
   const SeqScanPlanNode *plan_;
   std::unique_ptr<TableIterator> iter_{nullptr};
 };
-} // namespace bustub
+}  // namespace bustub

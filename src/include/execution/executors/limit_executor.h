@@ -25,7 +25,7 @@ namespace bustub {
  * operator.
  */
 class LimitExecutor : public AbstractExecutor {
-public:
+ public:
   /**
    * Construct a new LimitExecutor instance.
    * @param exec_ctx The executor context
@@ -48,15 +48,13 @@ public:
   auto Next(Tuple *tuple, RID *rid) -> bool override;
 
   /** @return The output schema for the limit */
-  auto GetOutputSchema() const -> const Schema & override {
-    return plan_->OutputSchema();
-  };
+  auto GetOutputSchema() const -> const Schema & override { return plan_->OutputSchema(); };
 
-private:
+ private:
   /** The limit plan node to be executed */
   const LimitPlanNode *plan_;
   /** The child executor from which tuples are obtained */
   std::unique_ptr<AbstractExecutor> child_executor_;
   size_t limit_idx_{0};
 };
-} // namespace bustub
+}  // namespace bustub

@@ -5,8 +5,7 @@
 
 namespace bustub {
 
-auto Optimizer::OptimizeSortLimitAsTopN(const AbstractPlanNodeRef &plan)
-    -> AbstractPlanNodeRef {
+auto Optimizer::OptimizeSortLimitAsTopN(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef {
   std::vector<AbstractPlanNodeRef> children;
   for (const auto &child : plan->children_) {
     children.push_back(OptimizeSortLimitAsTopN(child));

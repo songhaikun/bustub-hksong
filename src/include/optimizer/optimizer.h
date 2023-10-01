@@ -19,7 +19,7 @@ namespace bustub {
  * `AbstractPlanNode`.
  */
 class Optimizer {
-public:
+ public:
   explicit Optimizer(const Catalog &catalog, bool force_starter_rule)
       : catalog_(catalog), force_starter_rule_(force_starter_rule) {}
 
@@ -27,15 +27,14 @@ public:
 
   auto OptimizeCustom(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef;
 
-private:
+ private:
   /**
    * @brief merge projections that do identical project.
    * Identical projection might be produced when there's `SELECT *`,
    * aggregation, or when we need to rename the columns in the planner. We merge
    * these projections so as to make execution faster.
    */
-  auto OptimizeMergeProjection(const AbstractPlanNodeRef &plan)
-      -> AbstractPlanNodeRef;
+  auto OptimizeMergeProjection(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef;
 
   /**
    * @brief merge filter condition into nested loop join.
@@ -43,34 +42,29 @@ private:
    * nested loop join) and a filter plan node. We can merge the filter condition
    * into nested loop join to achieve better efficiency.
    */
-  auto OptimizeMergeFilterNLJ(const AbstractPlanNodeRef &plan)
-      -> AbstractPlanNodeRef;
+  auto OptimizeMergeFilterNLJ(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef;
 
   /**
    * @brief optimize nested loop join into hash join.
    * In the starter code, we will check NLJs with exactly one equal condition.
    * You can further support optimizing joins with multiple eq conditions.
    */
-  auto OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan)
-      -> AbstractPlanNodeRef;
+  auto OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef;
 
   /**
    * @brief optimize nested loop join into index join.
    */
-  auto OptimizeNLJAsIndexJoin(const AbstractPlanNodeRef &plan)
-      -> AbstractPlanNodeRef;
+  auto OptimizeNLJAsIndexJoin(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef;
 
   /**
    * @brief eliminate always true filter
    */
-  auto OptimizeEliminateTrueFilter(const AbstractPlanNodeRef &plan)
-      -> AbstractPlanNodeRef;
+  auto OptimizeEliminateTrueFilter(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef;
 
   /**
    * @brief merge filter into filter_predicate of seq scan plan node
    */
-  auto OptimizeMergeFilterScan(const AbstractPlanNodeRef &plan)
-      -> AbstractPlanNodeRef;
+  auto OptimizeMergeFilterScan(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef;
 
   /**
    * @brief rewrite expression to be used in nested loop joins. e.g., if we have
@@ -83,8 +77,7 @@ private:
    * @param left_column_cnt number of columns in the left size of the NLJ
    * @param right_column_cnt number of columns in the left size of the NLJ
    */
-  auto RewriteExpressionForJoin(const AbstractExpressionRef &expr,
-                                size_t left_column_cnt, size_t right_column_cnt)
+  auto RewriteExpressionForJoin(const AbstractExpressionRef &expr, size_t left_column_cnt, size_t right_column_cnt)
       -> AbstractExpressionRef;
 
   /** @brief check if the predicate is true::boolean */
@@ -93,8 +86,7 @@ private:
   /**
    * @brief optimize order by as index scan if there's an index on a table
    */
-  auto OptimizeOrderByAsIndexScan(const AbstractPlanNodeRef &plan)
-      -> AbstractPlanNodeRef;
+  auto OptimizeOrderByAsIndexScan(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef;
 
   /** @brief check if the index can be matched */
   auto MatchIndex(const std::string &table_name, uint32_t index_key_idx)
@@ -103,8 +95,7 @@ private:
   /**
    * @brief optimize sort + limit as top N
    */
-  auto OptimizeSortLimitAsTopN(const AbstractPlanNodeRef &plan)
-      -> AbstractPlanNodeRef;
+  auto OptimizeSortLimitAsTopN(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef;
 
   /**
    * @brief get the estimated cardinality for a table based on the table name.
@@ -114,8 +105,7 @@ private:
    * @param table_name
    * @return std::optional<size_t>
    */
-  auto EstimatedCardinality(const std::string &table_name)
-      -> std::optional<size_t>;
+  auto EstimatedCardinality(const std::string &table_name) -> std::optional<size_t>;
 
   /** Catalog will be used during the planning process. USERS SHOULD ENSURE IT
    * OUTLIVES OPTIMIZER, otherwise it's a dangling reference.
@@ -125,4 +115,4 @@ private:
   const bool force_starter_rule_;
 };
 
-} // namespace bustub
+}  // namespace bustub

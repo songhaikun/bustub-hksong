@@ -18,9 +18,8 @@
 
 namespace bustub {
 
-InsertExecutor::InsertExecutor(
-    ExecutorContext *exec_ctx, const InsertPlanNode *plan,
-    std::unique_ptr<AbstractExecutor> &&child_executor)
+InsertExecutor::InsertExecutor(ExecutorContext *exec_ctx, const InsertPlanNode *plan,
+                               std::unique_ptr<AbstractExecutor> &&child_executor)
     : AbstractExecutor(exec_ctx), plan_(plan), child_executor_(std::move(child_executor)) {}
 
 void InsertExecutor::Init() {
@@ -35,8 +34,11 @@ auto InsertExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   }
   int cnt = 0;
   while (child_executor_->Next(tuple, rid)) {
-    struct TupleMeta tuple_meta{INVALID_PAGE_ID, INVALID_PAGE_ID, false};
-    auto rid1 = table_info_->table_->InsertTuple(tuple_meta, *tuple, exec_ctx_->GetLockManager(), exec_ctx_->GetTransaction(), plan_->TableOid());
+    struct TupleMeta tuple_meta {
+      INVALID_PAGE_ID, INVALID_PAGE_ID, false
+    };
+    auto rid1 = table_info_->table_->InsertTuple(tuple_meta, *tuple, exec_ctx_->GetLockManager(),
+                                                 exec_ctx_->GetTransaction(), plan_->TableOid());
     if (!rid1) {
       continue;
     }
@@ -55,4 +57,4 @@ auto InsertExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   return true;
 }
 
-} // namespace bustub
+}  // namespace bustub

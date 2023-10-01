@@ -23,7 +23,7 @@ class IndexIterator {
  public:
   using LeafPage = BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>;
   // you may define your own constructor based on your member variables
-  IndexIterator(int idx, int max_idx_per_page,  long long uuid, BufferPoolManager *bpm, LeafPage *start_page);
+  IndexIterator(int idx, int max_idx_per_page, uint64_t uuid, BufferPoolManager *bpm, LeafPage *start_page);
   ~IndexIterator();  // NOLINT
 
   auto IsEnd() -> bool;
@@ -33,14 +33,15 @@ class IndexIterator {
   auto operator++() -> IndexIterator &;
 
   auto operator==(const IndexIterator &itr) const -> bool {
-    return (itr.uuid_ == this->uuid_) && ((this->is_end_page_ && itr.is_end_page_) || (itr.cur_page_ == this->cur_page_ && itr.idx_ == this->idx_));
+    return (itr.uuid_ == this->uuid_) &&
+           ((this->is_end_page_ && itr.is_end_page_) || (itr.cur_page_ == this->cur_page_ && itr.idx_ == this->idx_));
   }
 
   auto operator!=(const IndexIterator &itr) const -> bool {
     if (itr.uuid_ != this->uuid_) {
       return true;
     }
-    if (itr.is_end_page_!=this->is_end_page_) {
+    if (itr.is_end_page_ != this->is_end_page_) {
       return true;
     }
     if (itr.is_end_page_) {
@@ -51,14 +52,14 @@ class IndexIterator {
 
  private:
   // add your own private member variables here
-  // pointer 
   int idx_;
   int max_idx_per_page_;
-  long long uuid_;
+  uint64_t uuid_;
   BufferPoolManager *bpm_;
-  LeafPage* cur_page_;
+  LeafPage *cur_page_;
   bool is_end_page_{false};
-   
+  MappingType end_node_;
+  MappingType value_node_;
 };
 
 }  // namespace bustub

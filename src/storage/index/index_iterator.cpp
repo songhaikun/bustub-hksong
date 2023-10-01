@@ -12,10 +12,12 @@ namespace bustub {
  * set your own input parameters
  */
 INDEX_TEMPLATE_ARGUMENTS
-INDEXITERATOR_TYPE::IndexIterator(int idx, int max_idx_per_page,  long long uuid, BufferPoolManager *bpm, LeafPage *start_page) 
-    :  idx_(idx), max_idx_per_page_(max_idx_per_page), uuid_(uuid), bpm_(bpm), cur_page_(start_page){
-  if(nullptr == start_page) {
+INDEXITERATOR_TYPE::IndexIterator(int idx, int max_idx_per_page, uint64_t uuid, BufferPoolManager *bpm,
+                                  LeafPage *start_page)
+    : idx_(idx), max_idx_per_page_(max_idx_per_page), uuid_(uuid), bpm_(bpm), cur_page_(start_page) {
+  if (nullptr == start_page) {
     is_end_page_ = true;
+    end_node_ = MappingType(KeyType(), ValueType());
   }
 }
 
@@ -24,7 +26,7 @@ INDEXITERATOR_TYPE::~IndexIterator() = default;  // NOLINT
 
 INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::IsEnd() -> bool {
-  if(nullptr == bpm_ || nullptr == cur_page_) {
+  if (nullptr == bpm_ || nullptr == cur_page_) {
     return true;
   }
   return is_end_page_;
@@ -32,18 +34,18 @@ auto INDEXITERATOR_TYPE::IsEnd() -> bool {
 
 INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::operator*() -> const MappingType & {
-  // get the value?
-  if(!is_end_page_) {
-    return std::move(MappingType(std::move(cur_page_->KeyAt(idx_)), std::move(cur_page_->ValueAt(idx_))));
+  if (is_end_page_) {
+    return end_node_;
   }
-  return std::move(MappingType(std::move(KeyType()), std::move(ValueType())));
+  value_node_ = MappingType(cur_page_->KeyAt(idx_), cur_page_->ValueAt(idx_));
+  return value_node_;
 }
 INDEX_TEMPLATE_ARGUMENTS
 auto INDEXITERATOR_TYPE::operator++() -> INDEXITERATOR_TYPE & {
   if (is_end_page_) {
     return *this;
   }
-  if(++idx_ < max_idx_per_page_) {
+  if (++idx_ < max_idx_per_page_) {
     return *this;
   }
   page_id_t next_page = cur_page_->GetNextPageId();

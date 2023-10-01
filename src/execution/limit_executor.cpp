@@ -26,10 +26,7 @@ auto LimitExecutor::Next(Tuple *tuple, RID *rid) -> bool {
   }
   limit_idx_++;
   auto status = child_executor_->Next(tuple, rid);
-  if (!status) {
-    return false;
-  }
-  return true;
+  return status;
 }
 
 }  // namespace bustub

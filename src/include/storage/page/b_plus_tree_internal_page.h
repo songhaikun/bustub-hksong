@@ -102,9 +102,10 @@ class BPlusTreeInternalPage : public BPlusTreePage {
 
     return kstr;
   }
-  // 
+
   auto GetIndexLargerThanKey(int i, const KeyType key, KeyComparator comporator) const -> int {
-    int start = i, end = GetSize() - 1;
+    int start = i;
+    int end = GetSize() - 1;
     while (start <= end) {
       int mid_idx = start + (end - start) / 2;
       KeyType mid_key = array_[mid_idx].first;
@@ -120,8 +121,9 @@ class BPlusTreeInternalPage : public BPlusTreePage {
     return start;
   }
 
-  auto GetIndexEqualToKey(int& i, const KeyType key, KeyComparator comporator) const -> bool {
-    int start = i, end = GetSize() - 1;
+  auto GetIndexEqualToKey(int &i, const KeyType key, KeyComparator comporator) const -> bool {
+    int start = i;
+    int end = GetSize() - 1;
     while (start <= end) {
       int mid_idx = start + (end - start) / 2;
       KeyType mid_key = array_[mid_idx].first;
@@ -142,7 +144,7 @@ class BPlusTreeInternalPage : public BPlusTreePage {
     // solution 1
     int end = GetSize();
     for (; i < end; ++i) {
-      if(value == array_[i].second) {
+      if (value == array_[i].second) {
         return i;
       }
     }
@@ -150,7 +152,8 @@ class BPlusTreeInternalPage : public BPlusTreePage {
   }
 
   auto MemMove(B_PLUS_TREE_INTERNAL_PAGE_TYPE *src, int src_idx, int dest_idx, int len) {
-    std::memmove(&array_[dest_idx], &src->array_[src_idx], len * sizeof(array_[0]));
+    std::memmove(reinterpret_cast<char *>(&array_[dest_idx]), reinterpret_cast<char *>(&src->array_[src_idx]),
+                 len * sizeof(array_[0]));
   }
 
  private:

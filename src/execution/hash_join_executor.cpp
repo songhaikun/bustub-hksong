@@ -10,24 +10,22 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "type/value_factory.h"
 #include "execution/executors/hash_join_executor.h"
+#include "type/value_factory.h"
 
 namespace bustub {
 
-HashJoinExecutor::HashJoinExecutor(
-    ExecutorContext *exec_ctx, const HashJoinPlanNode *plan,
-    std::unique_ptr<AbstractExecutor> &&left_child,
-    std::unique_ptr<AbstractExecutor> &&right_child)
-    : AbstractExecutor(exec_ctx), plan_(plan),
+HashJoinExecutor::HashJoinExecutor(ExecutorContext *exec_ctx, const HashJoinPlanNode *plan,
+                                   std::unique_ptr<AbstractExecutor> &&left_child,
+                                   std::unique_ptr<AbstractExecutor> &&right_child)
+    : AbstractExecutor(exec_ctx),
+      plan_(plan),
       left_child_(std::move(left_child)),
       right_child_(std::move(right_child)) {
-  if (!(plan->GetJoinType() == JoinType::LEFT ||
-        plan->GetJoinType() == JoinType::INNER)) {
+  if (!(plan->GetJoinType() == JoinType::LEFT || plan->GetJoinType() == JoinType::INNER)) {
     // Note for 2023 Spring: You ONLY need to implement left join and inner
     // join.
-    throw bustub::NotImplementedException(
-        fmt::format("join type {} not supported", plan->GetJoinType()));
+    throw bustub::NotImplementedException(fmt::format("join type {} not supported", plan->GetJoinType()));
   }
 }
 
@@ -43,7 +41,7 @@ void HashJoinExecutor::Init() {
   RID produce_rid;
   HashJoinKey key;
   while (right_child_->Next(&produce_tuple, &produce_rid)) {
-    for (auto it : right_expr) {
+    for (const auto &it : right_expr) {
       key.keys_.emplace_back(it->Evaluate(&produce_tuple, right_child_->GetOutputSchema()));
     }
     if (ht_.find(key) == ht_.end()) {
@@ -66,7 +64,8 @@ void HashJoinExecutor::Init() {
           values.push_back(produce_tuple.GetValue(&plan_->GetLeftPlan()->OutputSchema(), i));
         }
         for (uint32_t i = 0; i < right_count; ++i) {
-          values.push_back(ValueFactory::GetNullValueByType(plan_->GetRightPlan()->OutputSchema().GetColumn(i).GetType()));
+          values.push_back(
+              ValueFactory::GetNullValueByType(plan_->GetRightPlan()->OutputSchema().GetColumn(i).GetType()));
         }
         output_.emplace_back(values, &GetOutputSchema());
       } else {
@@ -114,4 +113,4 @@ auto HashJoinExecutor::Next(Tuple *tuple, RID *rid) -> bool {
   return true;
 }
 
-} // namespace bustub
+}  // namespace bustub

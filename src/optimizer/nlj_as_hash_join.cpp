@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <memory>
 #include "catalog/column.h"
 #include "catalog/schema.h"
 #include "common/exception.h"
@@ -12,13 +14,10 @@
 #include "execution/plans/projection_plan.h"
 #include "optimizer/optimizer.h"
 #include "type/type_id.h"
-#include <algorithm>
-#include <memory>
 
 namespace bustub {
 
-auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan)
-    -> AbstractPlanNodeRef {
+auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan) -> AbstractPlanNodeRef {
   // TODO(student): implement NestedLoopJoin -> HashJoin optimizer rule
   // Note for 2023 Spring: You should at least support join keys of the form:
   // 1. <column expr> = <column expr>
@@ -29,9 +28,10 @@ auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan)
   for (const auto &it : plan->children_) {
     children.push_back(OptimizeSortLimitAsTopN(it));
   }
-  
+
   auto res_plan = plan->CloneWithChildren(children);
-  const std::shared_ptr<const NestedLoopJoinPlanNode> &ptr = std::dynamic_pointer_cast<const NestedLoopJoinPlanNode>(plan);
+  const std::shared_ptr<const NestedLoopJoinPlanNode> &ptr =
+      std::dynamic_pointer_cast<const NestedLoopJoinPlanNode>(plan);
   if (nullptr == ptr) {
     return res_plan;
   }
@@ -40,7 +40,6 @@ auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan)
 
   std::vector<AbstractExpressionRef> left_key_expressions;
   std::vector<AbstractExpressionRef> right_key_expressions;
-
 
   std::vector<AbstractExpressionRef> vector = ptr->Predicate()->GetChildren();  // 得到谓词的孩子节点
 
@@ -56,8 +55,8 @@ auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan)
       const std::shared_ptr<ComparisonExpression> com_expr = std::dynamic_pointer_cast<ComparisonExpression>(it);
       if (com_expr) {
         for (uint8_t j = 0; j < 2; ++j) {
-          const std::shared_ptr<ColumnValueExpression> col_expr_tmp
-              = std::dynamic_pointer_cast<ColumnValueExpression>(com_expr->GetChildAt(j));
+          const std::shared_ptr<ColumnValueExpression> col_expr_tmp =
+              std::dynamic_pointer_cast<ColumnValueExpression>(com_expr->GetChildAt(j));
           if (col_expr_tmp->GetTupleIdx() == 0) {
             left_key_expressions.push_back(col_expr_tmp);
           } else {
@@ -67,8 +66,8 @@ auto Optimizer::OptimizeNLJAsHashJoin(const AbstractPlanNodeRef &plan)
       }
     }
   }
-  return std::make_shared<HashJoinPlanNode>(ptr->output_schema_,left_plan, right_plan, left_key_expressions,
+  return std::make_shared<HashJoinPlanNode>(ptr->output_schema_, left_plan, right_plan, left_key_expressions,
                                             right_key_expressions, ptr->GetJoinType());
 }
 
-} // namespace bustub
+}  // namespace bustub
