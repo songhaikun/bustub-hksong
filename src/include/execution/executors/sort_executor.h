@@ -55,5 +55,9 @@ public:
 private:
   /** The sort plan node to be executed */
   const SortPlanNode *plan_;
+  std::unique_ptr<AbstractExecutor> child_executor_;
+  std::vector<std::pair<OrderByType, AbstractExpressionRef>> obs_;
+  std::vector<Tuple> tuple_vec_;
+  std::vector<Tuple>::iterator iterator_;
 };
 } // namespace bustub

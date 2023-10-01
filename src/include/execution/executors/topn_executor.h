@@ -15,6 +15,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <stack>
 
 #include "execution/executor_context.h"
 #include "execution/executors/abstract_executor.h"
@@ -67,5 +68,6 @@ private:
   const TopNPlanNode *plan_;
   /** The child executor from which tuples are obtained */
   std::unique_ptr<AbstractExecutor> child_executor_;
+  std::stack<Tuple> child_tuples_;  // priority queue get reversed data
 };
-} // namespace bustub
+}  // namespace bustub
