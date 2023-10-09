@@ -48,8 +48,8 @@ INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::GetValue(const KeyType &key, std::vector<ValueType> *result, Transaction *txn) -> bool {
   pthread_t thread_id = pthread_self();
   std::stringstream ss;
-  ss << thread_id << " getvalue:" << key << "max internal size" << internal_max_size_ << "leaf max size"
-     << leaf_max_size_ << std::endl;
+  ss << thread_id<< " getvalue:" << key << "max internal size" << internal_max_size_ << "leaf max size"
+     << leaf_max_size_<< std::endl;
   LOG_DEBUG("%s", ss.str().c_str());
   try {
     // get root page
@@ -105,8 +105,8 @@ auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, Transact
   // when we insert a tuple, we should remember parent context and do cursive insertion
   pthread_t thread_id = pthread_self();
   std::stringstream ss;
-  ss << thread_id << " insert:" << key << ", " << value  << "max internal size" << internal_max_size_ << "leaf max size"
-     << leaf_max_size_<< std::endl;
+  ss << thread_id<< " insert:" << key << ", " << value  << "max internal size" << internal_max_size_
+     << "leaf max size" << leaf_max_size_<< std::endl;
   LOG_DEBUG("%s", ss.str().c_str());
   try {
     if (header_page_id_ == INVALID_PAGE_ID) {
@@ -388,8 +388,8 @@ INDEX_TEMPLATE_ARGUMENTS
 void BPLUSTREE_TYPE::Remove(const KeyType &key, Transaction *txn) {
   pthread_t thread_id = pthread_self();
   std::stringstream ss;
-  ss << thread_id<< " remove:" << key  << "max internal size" << internal_max_size_ << "leaf max size" << leaf_max_size_
-     << std::endl;
+  ss << thread_id<< " remove:" << key  << "max internal size" << internal_max_size_ << "leaf max size"
+     << leaf_max_size_<< std::endl;
   LOG_DEBUG("%s", ss.str().c_str());
   try {
     if (header_page_id_ == INVALID_PAGE_ID) {
@@ -685,8 +685,8 @@ INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Begin() -> INDEXITERATOR_TYPE {
   pthread_t thread_id = pthread_self();
   std::stringstream ss;
-  ss << thread_id << " begin:"
-     << "max internal size" << internal_max_size_ << "leaf max size" << leaf_max_size_ << std::endl;
+  ss << thread_id<< " begin:" << "max internal size" << internal_max_size_ << "leaf max size"
+     << leaf_max_size_<< std::endl;
   LOG_DEBUG("%s", ss.str().c_str());
   try {
     if (header_page_id_ == INVALID_PAGE_ID) {
@@ -733,8 +733,8 @@ INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Begin(const KeyType &key) -> INDEXITERATOR_TYPE {
   pthread_t thread_id = pthread_self();
   std::stringstream ss;
-  ss << thread_id << " begin(key): key " << key << ", max internal size" << internal_max_size_ << "leaf max size"
-     << leaf_max_size_ << std::endl;
+  ss << thread_id<< " begin(key): key " << key << ", max internal size" << internal_max_size_ << "leaf max size"
+     << leaf_max_size_<< std::endl;
   LOG_DEBUG("%s", ss.str().c_str());
   try {
     if (header_page_id_ == INVALID_PAGE_ID) {

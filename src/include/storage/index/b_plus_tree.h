@@ -22,11 +22,13 @@
 #include "buffer/buffer_pool_manager.h"
 #include "common/config.h"
 #include "common/macros.h"
+// #include "common/rwlatch.h"
 #include "concurrency/transaction.h"
 #include "storage/index/index_iterator.h"
 #include "storage/page/b_plus_tree_header_page.h"
 #include "storage/page/b_plus_tree_internal_page.h"
 #include "storage/page/b_plus_tree_leaf_page.h"
+// #include "storage/page/b_plus_tree_page.h"
 #include "storage/page/page_guard.h"
 
 namespace bustub {
@@ -179,6 +181,10 @@ class BPlusTree {
   page_id_t header_page_id_;
   std::mutex little_latch_;
   std::mutex opt_letch_;
+  // bool is_empty_{true};
+  // WritePageGuard header_guard_;
+  // BPlusTreeHeaderPage *header_page_;
+  // ReaderWriterLatch rwlatch_;
 };
 
 /**

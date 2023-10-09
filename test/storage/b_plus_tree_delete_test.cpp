@@ -37,38 +37,45 @@ TEST(BPlusTreeTests, DeleteTest1) {
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
   // create b+ tree
-  // BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree(
-  //     "foo_pk", header_page->GetPageId(), bpm, comparator, 3, 5);
   BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree(
-      "foo_pk", header_page->GetPageId(), bpm, comparator);
+      "foo_pk", header_page->GetPageId(), bpm, comparator, 3, 5);
+  // BPlusTree<GenericKey<8>, RID, GenericComparator<8>> tree(
+  //     "foo_pk", header_page->GetPageId(), bpm, comparator);
   // GenericKey<8> index_key;
   // RID rid;
   // create transaction
   auto *transaction = new Transaction(0);
 
   std::vector<int64_t> keys = {};
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 1000; i++) {
     keys.push_back(i);
   }
   std::vector<std::thread> thrds;
-  for(int i = 0; i < 10; ++i) {
-    std::thread t([i, &keys, &tree, transaction](){
-      for(int j = i * 1000; j < (i + 1) * 1000; ++j){
-        auto key = keys[j];
-        int64_t value = key & 0xFFFFFFFF;
-        RID rid;
-        GenericKey<8> index_key;
-        rid.Set(static_cast<int32_t>(key >> 32), value);
-        index_key.SetFromInteger(key);
-        tree.Insert(index_key, rid, transaction);
+  for(int i = 0; i < 2; ++i) {
+    std::thread t([&tree](){
+      for (int j = 0; j < 10; j++) {
+        std::cout << tree.IsEmpty() << std::endl;
       }
     });
+    // std::thread t([i, &keys, &tree, transaction](){
+    //   for(int j = i; j < 1000; j += 2){
+    //     auto key = keys[j];
+    //     int64_t value = key & 0xFFFFFFFF;
+    //     RID rid;
+    //     GenericKey<8> index_key;
+    //     rid.Set(static_cast<int32_t>(key >> 32), value);
+    //     index_key.SetFromInteger(key);
+    //     tree.Insert(index_key, rid, transaction);
+    //   }
+    // });
     thrds.push_back(std::move(t));
   }
   for (auto& t : thrds) {
     t.join();
   }
-  tree.Print(bpm);
+  // tree.Print(bpm);
+
+
 
   // std::cout << "finished" << std::endl;
   // tree.Print(bpm);
@@ -107,29 +114,29 @@ TEST(BPlusTreeTests, DeleteTest1) {
   // }
   // tree.Print(bpm);
 
-  std::vector<int64_t> remove_keys = {};
-  for (int i = 0; i < 5000; i++) {
-    remove_keys.push_back(i);
-  }
-  std::vector<std::thread> del_threds;
-  for(int i = 0; i < 10; ++i) {
-    std::thread t([i, &remove_keys, &tree, transaction](){
-      for(int j = i * 500; j < (i + 1) * 500; ++j){
-        auto key = remove_keys[j];
-        GenericKey<8> index_key;
-        index_key.SetFromInteger(key);
-        tree.Remove(index_key, transaction);
-      }
-    });
-    del_threds.push_back(std::move(t));
-  }
-  for(auto& t : del_threds) {
-    t.join();
-  }
+  // std::vector<int64_t> remove_keys = {};
+  // for (int i = 0; i < 5000; i++) {
+  //   remove_keys.push_back(i);
+  // }
+  // std::vector<std::thread> del_threds;
+  // for(int i = 0; i < 10; ++i) {
+  //   std::thread t([i, &remove_keys, &tree, transaction](){
+  //     for(int j = i * 500; j < (i + 1) * 500; ++j){
+  //       auto key = remove_keys[j];
+  //       GenericKey<8> index_key;
+  //       index_key.SetFromInteger(key);
+  //       tree.Remove(index_key, transaction);
+  //     }
+  //   });
+  //   del_threds.push_back(std::move(t));
+  // }
+  // for(auto& t : del_threds) {
+  //   t.join();
+  // }
   // for (auto& t : thrds) {
   //   t.join();
   // }
-  tree.Print(bpm);
+  // tree.Print(bpm);
   // tree.Print(bpm);
   // tree.Print(bpm);
   // for (int i = 0; i < 10000; i++) {
