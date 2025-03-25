@@ -1,33 +1,52 @@
 #include "primer/trie_store.h"
 #include "common/exception.h"
+#include "primer/trie.h"
+#include <memory>
+#include <mutex>
+#include <optional>
 
 namespace bustub {
 
 template <class T>
 auto TrieStore::Get(std::string_view key) -> std::optional<ValueGuard<T>> {
-  // Pseudo-code:
-  // (1) Take the root lock, get the root, and release the root lock. Don't
-  // lookup the value in the
-  //     trie while holding the root lock.
-  // (2) Lookup the value in the trie.
-  // (3) If the value is found, return a ValueGuard object that holds a
-  // reference to the value and the
-  //     root. Otherwise, return std::nullopt.
-  throw NotImplementedException("TrieStore::Get is not implemented.");
+  std::shared_ptr<Trie> t;
+  {
+    std::lock_guard<std::mutex> lock(root_lock_);
+    t = std::make_shared<Trie>(root_);
+  }
+  const T* res = t->Get<T>(key);
+  if (nullptr == res) {
+    return std::nullopt;
+  }
+  return std::make_optional<ValueGuard<T>>(*t, *res);
 }
 
 template <class T> void TrieStore::Put(std::string_view key, T value) {
-  // You will need to ensure there is only one writer at a time. Think of how
-  // you can achieve this. The logic should be somehow similar to
-  // `TrieStore::Get`.
-  throw NotImplementedException("TrieStore::Put is not implemented.");
+  std::shared_ptr<Trie> t;
+  std::lock_guard<std::mutex> wlock(write_lock_);
+  {
+    std::lock_guard<std::mutex> lock(root_lock_);
+    t = std::make_shared<Trie>(root_);
+  }
+  auto ans = t->Put(key, std::move(value));
+  {
+    std::lock_guard<std::mutex> lock(root_lock_);
+    root_ = ans;
+  }
 }
 
 void TrieStore::Remove(std::string_view key) {
-  // You will need to ensure there is only one writer at a time. Think of how
-  // you can achieve this. The logic should be somehow similar to
-  // `TrieStore::Get`.
-  throw NotImplementedException("TrieStore::Remove is not implemented.");
+  std::shared_ptr<Trie> t;
+  std::lock_guard<std::mutex> wlock(write_lock_);
+  {
+    std::lock_guard<std::mutex> lock(root_lock_);
+    t = std::make_shared<Trie>(root_);
+  }
+  auto ans = t->Remove(key);
+  {
+    std::lock_guard<std::mutex> lock(root_lock_);
+    root_ = ans;
+  }
 }
 
 // Below are explicit instantiation of template functions.

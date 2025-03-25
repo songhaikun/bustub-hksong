@@ -112,6 +112,9 @@ public:
 // trie.
 class Trie {
 private:
+  using TriePtr = std::shared_ptr<Trie>;
+  using TrieNodePtr = std::shared_ptr<TrieNode>;
+  using ChildrenMap = std::map<char, std::shared_ptr<const TrieNode>>;
   // The root of the trie.
   std::shared_ptr<const TrieNode> root_{nullptr};
 
